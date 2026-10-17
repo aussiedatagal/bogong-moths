@@ -11,11 +11,8 @@
   height: var(--stick, 100svh);
   margin: 0;
   padding: 0.5rem 0.75rem 0;
-  /* above the cards, but only the graphic is opaque: cards slide in below it
-     and pass behind it on their way out, so they never cover it */
-  background: linear-gradient(var(--bg), var(--bg)) top / 100% var(--chart) no-repeat;
-  z-index: 2;
-  pointer-events: none;
+  background: var(--bg);
+  z-index: 0;
   display: flex;
   flex-direction: column;
 }
@@ -103,7 +100,7 @@ g.off { transition: opacity 400ms; }
   .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
   /* the graphic's bottom is the sticky block's bottom, so the held last card
      (bottom-aligned with it in scroller.js) leaves with it */
-  .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; background: var(--bg); }
+  .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; }
   .graphic { flex: 0 0 80svh; }
   .steps { flex: 0 0 25rem; margin-top: 0; padding: 0 1rem; }
   .step:first-child { margin-top: 40svh; }
