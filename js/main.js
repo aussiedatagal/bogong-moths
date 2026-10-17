@@ -20,22 +20,27 @@ async function start() {
   const files = {};
   for (const name of ['states', 'sightings', 'regions', 'basin', 'wind', 'surface', 'rain', 'years', 'postcodes']) files[name] = load(name);
 
+  const replay = document.getElementById('replay');
+  let progress = 0;
   const views = [];
+  // Draw one chart at a time and let the browser paint in between, so the
+  // first map shows as soon as it's ready instead of after all six
   for (const graphic of document.querySelectorAll('.graphic')) {
     const { chart, data } = charts[graphic.dataset.chart];
     const view = chart.init(graphic, ...await Promise.all(data.map(d => files[d])));
     const show = () => describe(graphic, view.update(graphic.dataset.state));
     show();
     views.push({ graphic, view, show });
+    if (replay.contains(graphic)) {
+      watchScrub(replay, p => {
+        progress = p;
+        replay.classList.toggle('is-done', view.setProgress(p));
+      });
+    }
+    await new Promise(r => setTimeout(r));
   }
 
-  const replay = document.getElementById('replay');
   const scrubbed = views.find(v => replay.contains(v.graphic));
-  let progress = 0;
-  watchScrub(replay, p => {
-    progress = p;
-    replay.classList.toggle('is-done', scrubbed.view.setProgress(p));
-  });
 
   // only animate the charts that are on screen
   const seen = new IntersectionObserver(entries => {

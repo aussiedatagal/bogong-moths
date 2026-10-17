@@ -71,8 +71,8 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     for (const s of states) el('path', { d: pathData(s.geometry, project), class: 'land' }, zoomed);
     // layers start hidden and update() fades in the ones the step needs
     basinPath = el('path', { d: pathData(basin, project), class: 'basin off' }, zoomed);
-    shareLayer = drawSurface(zoomed, surface, project, { cls: 'surface off', clip: `land-clip-${uid}` });
-    rainLayer = drawSurface(zoomed, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain off', fine: 6, clip: `basin-clip-${uid}` });
+    shareLayer = null;
+    rainLayer = null;
     dots = null;
 
     labels = el('g', { class: 'labels' }, svg);
@@ -229,8 +229,12 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     if (drawn.state !== state) {
       basinPath.classList.toggle('off', !cfg.basin && !cfg.outline);
       basinPath.classList.toggle('outline', !!cfg.outline);
-      shareLayer.classList.toggle('off', !cfg.surface);
-      rainLayer.classList.toggle('off', !cfg.rain);
+      // the colour layers are slow to draw, so each map only draws its own
+      if (cfg.surface && !shareLayer) shareLayer = drawSurface(zoomed, surface, project, { cls: 'surface', clip: `land-clip-${uid}` });
+      if (cfg.rain && !rainLayer) rainLayer = drawSurface(zoomed, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain', fine: 6, clip: `basin-clip-${uid}` });
+      for (const layer of [rainLayer, shareLayer]) if (layer) basinPath.after(layer);
+      shareLayer?.classList.toggle('off', !cfg.surface);
+      rainLayer?.classList.toggle('off', !cfg.rain);
       if (cfg.replay && !dots) drawDots();
       strip.classList.toggle('off', !cfg.replay);
       counter.classList.toggle('off', !cfg.replay);
