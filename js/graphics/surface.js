@@ -15,14 +15,15 @@ const SHARE_STOPS = [[0, [43, 42, 40]], [10, [92, 58, 44]], [20, [150, 64, 46]],
 export const LEGEND = SHARE_STOPS.map(([v]) => v);
 export const colour = ramp(SHARE_STOPS);
 
-// Rain as % of average in the Bureau of Meteorology's bands and colours
-// (its "percentage of mean" rainfall maps). Each band starts at its value.
-export const RAIN_BANDS = [
-  [0, [204, 102, 51]], [20, [255, 102, 51]], [40, [255, 153, 51]], [60, [255, 204, 153]],
-  [80, [255, 255, 204]], [100, [204, 255, 204]], [125, [102, 204, 102]], [150, [0, 153, 0]],
-  [200, [102, 153, 255]], [300, [0, 0, 255]], [400, [102, 0, 153]],
+// Rain as % of average, one band per 10% from 80%, in the colours of the
+// Bureau of Meteorology's rain radar (light to heavy)
+const RADAR = [
+  [245, 245, 255], [180, 180, 255], [120, 120, 255], [20, 20, 255], [0, 216, 195],
+  [0, 150, 144], [0, 102, 102], [255, 255, 0], [255, 200, 0], [255, 150, 0],
+  [255, 100, 0], [255, 0, 0], [200, 0, 0], [120, 0, 0], [40, 0, 0],
 ];
-export const rainColour = value => RAIN_BANDS.findLast(([v]) => v <= value)[1];
+export const RAIN_BANDS = RADAR.map((rgb, i) => [80 + i * 10, rgb]);
+export const rainColour = value => (RAIN_BANDS.findLast(([v]) => v <= value) || RAIN_BANDS[0])[1];
 
 // Places with few moth photos nearby fade out instead of showing a noisy share
 const photoFade = weight => Math.min(1, Math.max(0, (weight - 30) / 120));

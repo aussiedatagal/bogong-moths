@@ -5,8 +5,9 @@
 At phone and desktop sizes it checks that the replay map and its card stay
 pinned and fully on screen while the days play, that the prompt fades on the
 last day and the pinned part leaves soon after, that every chart has drawn
-with no text spilling past its top edge, and that there are no script errors
-or sideways scrolling. Needs Playwright.
+with no text spilling past its top edge, that flicking through lands each
+chart page at the top of the screen and still reaches the end of the page, and
+that there are no script errors or sideways scrolling. Needs Playwright.
 """
 import sys
 from playwright.sync_api import sync_playwright
@@ -78,6 +79,28 @@ def check_charts(page, w, h, problems):
             problems.append(f"{w}x{h} {c['state']}: text pokes {round(c['spill'])}px above the chart")
 
 
+def check_snap(page, w, h, problems):
+    """Flick down the page with the mouse wheel and see which pages land at the top."""
+    page.evaluate("scrollTo(0, 0)")
+    page.mouse.move(w / 2, h / 2)
+    landed, last = set(), -1
+    for _ in range(60):
+        page.mouse.wheel(0, 500)
+        page.wait_for_timeout(600)
+        y = page.evaluate("scrollY")
+        landed |= set(page.evaluate("[...document.querySelectorAll('.panel')].map((p, i) => Math.abs(p.getBoundingClientRect().top) < 2 ? i : -1).filter(i => i >= 0)"))
+        if y == last:
+            break
+        last = y
+    panels = page.evaluate("document.querySelectorAll('.panel').length")
+    if len(landed) < panels:
+        problems.append(f"{w}x{h} snap: only chart pages {sorted(landed)} of {panels} landed at the top")
+    if last + h < page.evaluate("document.documentElement.scrollHeight") - 2:
+        problems.append(f"{w}x{h} snap: stuck at {last}px before the end of the page")
+    # the sweeps below scroll a few pixels at a time, which snapping would undo
+    page.add_style_tag(content="html { scroll-snap-type: none !important; }")
+
+
 def main():
     problems = []
     with sync_playwright() as p:
@@ -89,6 +112,7 @@ def main():
             page.on("console", lambda m: m.type == "error" and errors.append(m.text))
             page.goto(URL, wait_until="networkidle")
             page.wait_for_timeout(1000)
+            check_snap(page, w, h, problems)
             check_replay(page, w, h, problems)
             check_charts(page, w, h, problems)
             if page.evaluate("document.documentElement.scrollWidth") > w:

@@ -149,7 +149,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     if (cfg.rain) {
       text(labels, 'Autumn and winter rain over', { x: 8, y: 24, class: 'place' });
       text(labels, 'the breeding area, % of average', { x: 8, y: 40, class: 'place' });
-      drawBands(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_BANDS.slice(4, 10), 'Outline: breeding area');
+      drawBands(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_BANDS, [100, 150, 200], 'Outline: breeding area');
     }
     if (cfg.wind) {
       text(labels, 'Blue: night wind about 1.5 km up,', { x: 8, y: 60, class: 'place wind-note' });
@@ -179,17 +179,14 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     text(g, note, { x: w + 10, y: 9, class: 'muted small' });
   }
 
-  // Stepped key like the Bureau's: one box per band, labelled at the edges.
-  // The last band only gives the closing label.
-  function drawBands(g, bands, note) {
-    const boxes = bands.slice(0, -1);
-    const w = Math.min(220, width - 140) / boxes.length;
+  // Stepped key like the Bureau's: one box per band, a few edges labelled
+  function drawBands(g, bands, labelled, note) {
+    const w = Math.min(225, width - 140) / bands.length;
     bands.forEach(([v, rgb], i) => {
-      if (i < boxes.length) el('rect', { x: i * w, width: w, height: 10, fill: `rgb(${rgb})` }, g);
-      const anchor = i === 0 ? 'start' : i === boxes.length ? 'end' : 'middle';
-      text(g, String(v), { x: i * w, y: 26, 'text-anchor': anchor, class: 'muted small' });
+      el('rect', { x: i * w, width: w, height: 10, fill: `rgb(${rgb})` }, g);
+      if (labelled.includes(v)) text(g, `${v}%`, { x: i * w, y: 26, 'text-anchor': 'middle', class: 'muted small' });
     });
-    text(g, note, { x: boxes.length * w + 10, y: 9, class: 'muted small' });
+    text(g, note, { x: bands.length * w + 10, y: 9, class: 'muted small' });
   }
 
   // Give each dot its own moment within its day, so scrolling adds them one
