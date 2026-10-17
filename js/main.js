@@ -29,6 +29,7 @@ async function start() {
   const show = (step, progress) => {
     current = step;
     const { chart, state } = step.dataset;
+    section.dataset.state = state;
     const { view } = views[chart];
     for (const [name, v] of Object.entries(views)) v.graphic.classList.toggle('is-shown', name === chart);
     const text = view.update(state) || '';

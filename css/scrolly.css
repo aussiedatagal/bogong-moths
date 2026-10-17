@@ -87,6 +87,10 @@ g.off { transition: opacity 400ms; }
 .windflow { position: absolute; top: 0; left: 0; pointer-events: none; }
 .graphic .wind-note { fill: var(--wind); }
 
+/* Open-Meteo asks for a link wherever its data is shown */
+.map-credit { position: absolute; right: 0.9rem; top: 0.4rem; margin: 0; font-size: 0.7rem; visibility: hidden; }
+#story[data-state="rain"] .map-credit, #story[data-state="wind"] .map-credit { visibility: visible; }
+
 /* year bars */
 .bar { fill: var(--moth); }
 .bar-total { fill: var(--land-edge); }
