@@ -1,0 +1,73 @@
+name: Refresh data
+
+# Daily during the 2026 Bogong season. Rebuilds the data from the Atlas of
+# Living Australia, writes the numbers into the page, and only publishes if
+# the written claims still hold (scripts/check_claims.py). A failed check
+# stops the run, and GitHub emails the repo owner.
+on:
+  schedule:
+    - cron: '17 20 * 10,11 *'   # 7:17 am Sydney time every day, October and November
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Stop after the season
+        run: |
+          if [ "$(date -u +%Y%m%d)" -gt 20261130 ]; then
+            echo "The 2026 season is over, turn this workflow off."
+            exit 1
+          fi
+      - name: Rebuild data
+        run: python3 scripts/build.py
+      - name: Write numbers into the page
+        run: python3 scripts/fill_text.py
+      - name: Check the written claims still hold
+        run: python3 scripts/check_claims.py
+      - id: commit
+        name: Commit if anything changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data index.html
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "Refresh data"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # pushes made with the workflow token don't start other workflows, so deploy here
+  deploy:
+    needs: refresh
+    if: needs.refresh.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

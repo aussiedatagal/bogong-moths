@@ -1,0 +1,25 @@
+.lookup label { display: block; font-weight: 700; margin: 1rem 0 0.3rem; }
+
+.lookup input {
+  font: inherit;
+  font-size: 16px;
+  width: 9rem;
+  padding: 0.5rem 0.6rem;
+  color: var(--ink);
+  background: var(--land);
+  border: 1px solid var(--land-edge);
+  border-radius: 4px;
+}
+
+
+.table-wrap { overflow-x: auto; margin: 1rem 0; }
+.lookup table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.lookup caption { text-align: left; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
+.lookup th, .lookup td { padding: 0.4rem 0.5rem; border-bottom: 1px solid var(--rule); text-align: right; vertical-align: bottom; }
+.lookup thead th { font-size: 0.8rem; color: var(--muted); font-weight: 400; }
+.lookup th[scope="row"], .lookup thead th:first-child { text-align: left; }
+.lookup td:nth-child(2) { color: var(--moth); font-weight: 700; }
+
+.lookup .your-area tr, .lookup tr.mine { background: color-mix(in srgb, var(--moth) 14%, transparent); }
+.lookup .your-area th, .lookup .your-area td { border-bottom: 3px solid var(--moth); }
+.lookup .your-area td[colspan] { text-align: left; color: var(--muted); font-weight: 400; }

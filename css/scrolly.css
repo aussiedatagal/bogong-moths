@@ -1,0 +1,108 @@
+.scrolly { position: relative; }
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 62svh;
+  margin: 0;
+  padding: 0.5rem 0.75rem 0;
+  background: var(--bg);
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.graphic { flex: 1 1 auto; min-height: 0; width: 100%; }
+.graphic svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.steps {
+  position: relative;
+  z-index: 1;
+  padding: 0 0.75rem 30svh;
+  pointer-events: none;
+}
+
+.step {
+  pointer-events: auto;
+  max-width: 30rem;
+  margin: 0 auto 80svh;
+  padding: 1rem 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.step p { margin: 0 0 0.6rem; transition: color 250ms; }
+.step p:last-child { margin-bottom: 0; }
+.step[data-scrub] { min-height: 260svh; padding: 0; background: none; border: 0; }
+.step[data-scrub] .card {
+  position: sticky;
+  top: calc(62svh + 0.5rem);
+  padding: 1rem 1.1rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.step:not(.is-active) p { color: var(--muted); }
+.step:first-child { margin-top: 30svh; }
+.step .hl { color: var(--moth); font-weight: 700; }
+
+/* chart text */
+.graphic { position: relative; }
+.graphic text { fill: var(--ink); font: 13px var(--body); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+.graphic .muted { fill: var(--muted); }
+.graphic .small { font-size: 12px; }
+.graphic .place { font-size: 13px; }
+.graphic .chart-title { font-weight: 700; }
+.graphic .value { font-weight: 700; fill: var(--moth); }
+
+/* maps */
+.land { vector-effect: non-scaling-stroke; fill: var(--land); stroke: var(--land-edge); stroke-width: 1; }
+.basin { fill: var(--moth-soft); fill-opacity: 0.35; stroke: var(--moth-soft); transition: opacity 400ms; }
+.graphic .area-label { font-size: 15px; font-weight: 700; }
+.graphic .key-title { font-weight: 700; }
+.today { stroke: var(--ink); stroke-width: 2; }
+.city { fill: var(--ink); }
+.alps { fill: var(--muted); }
+.route { fill: none; stroke: var(--ink); stroke-width: 2; }
+.arrow-head { fill: var(--ink); }
+.surface { transition: opacity 500ms; }
+.rain { transition: opacity 500ms; }
+.basin.outline { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
+.zoom { transform-origin: 0 0; transition: transform 700ms ease-in-out; }
+.sighting { fill: var(--moth); opacity: 0.75; transition: opacity 200ms; }
+.basin.off, .surface.off, .rain.off, .sighting.off, .sighting.hidden, g.off { opacity: 0; }
+g.off { transition: opacity 400ms; }
+.day { fill: var(--moth); transition: opacity 400ms; }
+.day.dim { opacity: 0.2; }
+.windflow { position: absolute; top: 0; left: 0; pointer-events: none; }
+.graphic .wind-note { fill: var(--wind); }
+.scrolly:not([data-state="why"]) .map-credit { visibility: hidden; }
+.map-credit { position: absolute; right: 0.9rem; top: 0.3rem; margin: 0; font-size: 0.7rem; color: var(--muted); }
+
+/* year bars */
+.bar { fill: var(--moth); }
+.bar-total { fill: var(--land-edge); }
+.graphic .value.total { fill: var(--ink); }
+.graphic .mark { transition: y 600ms ease-in-out, height 600ms ease-in-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sighting, .basin, .surface, .zoom, .graphic .mark, .day, .step p { transition: none; }
+}
+
+@media (min-width: 900px) {
+  .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
+  .sticky { flex: 1 1 60%; height: 100svh; padding: 2rem 1rem; justify-content: center; }
+  .graphic { flex: 0 0 80svh; }
+  .steps { flex: 0 0 25rem; padding: 0 1rem 40svh; }
+  .step:first-child { margin-top: 40svh; }
+  .step[data-scrub] .card { top: 40svh; }
+}
+
+/* replay date and count */
+.counter { transition: opacity 300ms; }
+.graphic .counter-date { font: 600 26px var(--display); fill: var(--moth); }
+.graphic .counter-count { font-size: 13px; fill: var(--ink); }
+
+.scroll-on { color: var(--moth); font-weight: 700; transition: opacity 300ms; }
+.is-done .scroll-on { opacity: 0; }
+.scroll-on::after { content: " \2193"; }

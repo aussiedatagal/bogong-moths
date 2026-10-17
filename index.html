@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Year of the Bogong</title>
+  <meta name="description" content="This spring, swarms of endangered Bogong moths turned up in homes and gardens across south-east Australia.">
+  <meta property="og:title" content="Year of the Bogong">
+  <meta property="og:description" content="This spring, swarms of endangered Bogong moths turned up in homes and gardens across south-east Australia.">
+  <meta property="og:image" content="https://aussiedatagal.github.io/bogong-moths/img/og.png">
+  <meta property="og:url" content="https://aussiedatagal.github.io/bogong-moths/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#0f141d">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Fraunces:opsz,wght@9..144,600&display=swap">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/scrolly.css">
+  <link rel="stylesheet" href="css/lookup.css">
+</head>
+<body>
+  <header class="site">
+    <a href="https://aussiedatagal.github.io/">aussiedatagal</a>
+  </header>
+
+  <main>
+    <section class="intro prose">
+      <h1>Year of the Bogong</h1>
+      <p class="dek">This spring, swarms of endangered Bogong moths turned up in homes and gardens across south-east Australia.</p>
+      <figure class="photo">
+        <img src="img/bogong.jpg" width="900" height="675" alt="A brown Bogong moth resting on a black tarp, wings folded, with a dark dash and pale spots on each wing">
+        <figcaption>A Bogong moth sheltering under a tarp in a Sydney backyard, October 2026.</figcaption>
+      </figure>
+      <p>Each year, nature lovers share their photos on the <a href="https://www.inaturalist.org/taxa/200008">iNaturalist</a> app. Scientists use them as crowdsourced field work, mostly to <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12650526/">map where animals and plants live</a>.</p>
+    </section>
+
+    <section class="scrolly" id="years">
+      <figure class="sticky" aria-describedby="years-desc">
+        <div class="graphic"></div>
+        <p class="sr-only" id="years-desc" aria-live="polite"></p>
+      </figure>
+      <div class="steps">
+        <div class="step" data-state="share">
+          <p>Around Sydney, people have photographed <span data-fact="sydSep26">1,744</span> Bogongs so far this spring. In previous years, Bogongs made up fewer than 1 in <span data-fact="sydBaseFewerThan">40</span> moths photographed there. This year, it was <span class="hl">1 in <span data-fact="oneIn26">3</span></span>. So why the massive increase?</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="scrolly" id="map">
+      <figure class="sticky" aria-describedby="map-desc">
+        <div class="graphic"></div>
+        <p class="map-credit"><a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a></p>
+        <p class="sr-only" id="map-desc" aria-live="polite"></p>
+      </figure>
+      <div class="steps">
+        <div class="step" data-state="route">
+          <p>Bogongs breed over winter on the inland plains. Each spring they fly up to 1,000 km to cool caves in the Snowy Mountains and Victoria's high country.</p>
+        </div>
+        <div class="step" data-state="route">
+          <p>They navigate there on instinct, <a href="https://www.nature.com/articles/s41586-025-09135-3">steering by the stars</a> and the Earth's magnetic field.</p>
+        </div>
+        <div class="step" data-state="replay" data-scrub>
+          <div class="card">
+            <p>Each dot is a Bogong someone photographed this spring. The dots pile up where people live.</p>
+            <p class="scroll-on">Keep scrolling to move through the days</p>
+          </div>
+        </div>
+        <div class="step" data-state="share">
+          <p>Adjusted for where people live, Bogongs stood out most in the Blue Mountains and the Illawarra, with Sydney and the South Coast close behind.</p>
+        </div>
+        <div class="step" data-state="rain">
+          <p>This autumn and winter, rain over the breeding grounds was a third above average. Bogong caterpillars live in the soil there and feed on the plants that come up after rain, so the moths likely had a baby boom of sorts.</p>
+        </div>
+        <div class="step" data-state="wind">
+          <p>So how did they end up in Sydney, when it's not on their flight path? Experts think strong <a href="https://www.abc.net.au/news/2026-09-28/bogong-moths-increase/107202604">north-westerly winds</a> high up blew many off course toward the coast, and <a href="https://www.sbs.com.au/news/article/bogong-moth-migration-australia-2026/p6jdonqa6">city lights</a> drew them down into our homes.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="lookup prose" id="lookup">
+      <h2>Bogong share near you</h2>
+      <p>Are you seeing more Bogongs than usual? Type a NSW postcode to compare your area with earlier springs.</p>
+      <label for="postcode-search">Postcode</label>
+      <input id="postcode-search" type="search" inputmode="numeric" maxlength="4" placeholder="e.g. 2000" autocomplete="off">
+      <p class="sr-only" id="postcode-result" aria-live="polite"></p>
+      <div class="table-wrap">
+        <table id="region-table">
+          <caption>The 15 areas with the highest share, of those with at least 100 moths photographed in spring <span data-fact="year">2026</span></caption>
+          <thead>
+            <tr><th scope="col">Area</th><th scope="col">Bogongs per 100 moths, spring <span data-fact="year">2026</span></th><th scope="col">Springs <span data-fact="baseFrom">2020</span> to <span data-fact="baseTo">2025</span></th><th scope="col">People logging Bogongs</th></tr>
+          </thead>
+          <tbody class="your-area" hidden></tbody>
+          <tbody class="ranked"></tbody>
+        </table>
+      </div>
+      <p class="credit">Each area is a square about 100 km across, named after its largest town. * One person logged most of the Bogongs in that area.</p>
+    </section>
+
+    <section class="prose" id="context">
+      <h2>Still endangered</h2>
+      <p>The drought from 2017 crashed the population. In the mountains, caves that once held hundreds of thousands of moths held only a few, according to a <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7986410/">2021 study</a>, and the IUCN listed the Bogong as endangered that year.</p>
+      <p>This spring's swarms are a hopeful sign, but nobody has counted how many moths made it.</p>
+      <p>If Bogongs turn up at your place, Zoos Victoria's Marissa Parrott <a href="https://www.sbs.com.au/news/article/bogong-moth-migration-australia-2026/p6jdonqa6">suggests</a> switching off outdoor lights, keeping cats inside and gently ushering any moths back out. They won't stay long. They have mountains to get to.</p>
+    </section>
+
+
+    <section class="references prose" id="references">
+      <h2>References</h2>
+      <ul>
+        <li>Sightings: <a href="https://www.ala.org.au/">Atlas of Living Australia</a>, mostly iNaturalist, to <span data-fact="dataTo">13 October</span> <span data-fact="year">2026</span>. Each year covers 1 September to <span data-fact="dataTo">13 October</span>, and moths exclude butterflies.</li>
+        <li>Research use of iNaturalist: Mason and others, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12650526/">"iNaturalist accelerates biodiversity research"</a>, BioScience, 2025.</li>
+        <li>Navigation: Dreyer and others, <a href="https://www.nature.com/articles/s41586-025-09135-3">"Bogong moths use a stellar compass for long-distance navigation at night"</a>, Nature, 2025.</li>
+        <li>Population crash: Green and others, <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7986410/">"Australian Bogong moths Agrotis infusa, 1951-2020: decline and crash"</a>, Austral Entomology, 2021.</li>
+        <li>Quotes: ABC News, <a href="https://www.abc.net.au/news/2026-09-28/bogong-moths-increase/107202604">28 September</a> and <a href="https://www.abc.net.au/news/2026-10-07/nsw-why-there-are-so-many-bogong-moths-in-sydney/107233300">7 October 2026</a>. <a href="https://www.sbs.com.au/news/article/bogong-moth-migration-australia-2026/p6jdonqa6">SBS News</a>, 28 September 2026.</li>
+        <li>Wind and rain: <a href="https://open-meteo.com/">Weather data by Open-Meteo.com</a>, CC BY 4.0.</li>
+        <li>Breeding area: <a href="https://data.gov.au/data/dataset/4ede9aed-5620-47db-a72b-0b3aa0a3ced0">Murray-Darling Basin Authority</a> boundary, CC BY 4.0.</li>
+        <li>Postcodes: Australian Bureau of Statistics postal areas, CC BY 4.0. Map outlines: <a href="https://www.naturalearthdata.com/">Natural Earth</a>.</li>
+        <li>Older Moth Tracker records: <a href="https://mothtracker.swifft.net.au/">Zoos Victoria</a>, 2019 to 2022, CC BY-NC 4.0.</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="site">
+    <p>Made by <a href="https://aussiedatagal.github.io/">aussiedatagal</a>. Data to <span data-fact="dataTo">13 October</span> <span data-fact="year">2026</span>, updated daily.</p>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+  <script src="https://cdn.counter.dev/script.js" data-id="2fd9f514-57b3-4a7e-bcab-1f565aff04d0" data-utcoffset="10"></script>
+</body>
+</html>
