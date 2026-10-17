@@ -11,11 +11,9 @@ function cells(r) {
   return `<td>${Math.round(per100(r.bogong, r.moths))}</td><td>${before}</td><td>${r.people}</td>`;
 }
 
-const label = r => (r.oneLogger ? `${r.name}*` : r.name);
-
 function yourRow(code, area) {
   if (!area) return `<tr><th scope="row">${code}</th><td colspan="3">Not in the NSW postcode list</td></tr>`;
-  const name = `${code}: ${label(area)}`;
+  const name = `${code}: ${area.name}`;
   if (area.moths < MIN_PHOTOS) return `<tr><th scope="row">${name}</th><td colspan="3">Too few moth records to say</td></tr>`;
   return `<tr><th scope="row">${name}</th>${cells(area)}</tr>`;
 }
@@ -38,7 +36,7 @@ export function initLookup(postcodes, regions, year) {
     .filter(r => r.moths >= TABLE_MIN)
     .sort((a, b) => per100(b.bogong, b.moths) - per100(a.bogong, a.moths))
     .slice(0, TOP_AREAS);
-  ranked.innerHTML = top.map(r => `<tr><th scope="row">${label(r)}</th>${cells(r)}</tr>`).join('');
+  ranked.innerHTML = top.map(r => `<tr><th scope="row">${r.name}</th>${cells(r)}</tr>`).join('');
 
   input.addEventListener('input', () => {
     const code = input.value.trim();

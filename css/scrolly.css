@@ -1,60 +1,35 @@
-.scrolly { position: relative; }
-
-.scrolly { --chart: 62svh; }
-
-/* On phones the graphic sits at the top and the cards scroll up over it.
-   The room after the last card lets it pass over the graphic, which then
-   scrolls away as soon as the card has gone. */
-.sticky {
+/* The replay is the one pinned part. The section is tall and the map and
+   its card stay on screen while the reader scrolls through the days, then
+   leave together. */
+.replay { height: 300svh; }
+.pin {
   position: sticky;
   top: 0;
-  height: var(--chart);
-  margin: 0;
-  padding: 0.5rem 0.75rem 0;
-  background: var(--bg);
-  z-index: 0;
+  height: 100svh;
   display: grid;
-  grid-template-rows: calc(var(--chart) - 0.5rem);
+  grid-template-rows: 1fr auto;
+  gap: 0.75rem;
+  padding: 1rem 0.75rem 1.25rem;
 }
-
-/* the charts sit on top of each other and swap in place */
-.graphic { grid-area: 1 / 1; min-height: 0; width: 100%; opacity: 0; visibility: hidden; transition: opacity 400ms, visibility 400ms; }
-.graphic.is-shown { opacity: 1; visibility: visible; }
-.graphic svg { display: block; width: 100%; height: 100%; overflow: visible; }
-
-.steps {
-  position: relative;
-  z-index: 1;
-  /* padding, not a margin on the last card: a margin would slip out of the
-     section, and the graphic would leave before the card had passed over it */
-  padding: 0 0.75rem var(--chart);
-  pointer-events: none;
-}
-
-.step {
-  pointer-events: auto;
+.replay .card {
   max-width: 30rem;
-  margin: 0 auto 80svh;
+  width: 100%;
+  margin: 0 auto;
   padding: 1rem 1.1rem;
   background: var(--card);
   border: 1px solid var(--rule);
   border-radius: 6px;
 }
-.step:last-child { margin-bottom: 0; }
-.step p { margin: 0 0 0.6rem; transition: color 250ms; }
-.step p:last-child { margin-bottom: 0; }
-.step[data-scrub] { min-height: 260svh; padding: 0; background: none; border: 0; }
-.step[data-scrub] .card {
-  position: sticky;
-  top: calc(var(--chart) + 0.5rem);
-  padding: 1rem 1.1rem;
-  background: var(--card);
-  border: 1px solid var(--rule);
-  border-radius: 6px;
-}
-.step:not(.is-active) p { color: var(--muted); }
-.step:first-child { margin-top: 30svh; }
-.step .hl { color: var(--moth); font-weight: 700; }
+.replay .card p { margin: 0 0 0.6rem; }
+.replay .card p:last-child { margin-bottom: 0; }
+
+/* the rest of the story is ordinary chart and caption blocks */
+.panel { position: relative; max-width: 40rem; margin: 0 auto; padding: 2rem 0.75rem; }
+.panel .graphic { height: min(62svh, 34rem); }
+.panel figcaption { max-width: 30rem; margin: 1rem auto 0; padding: 0 0.5rem; }
+
+.graphic { min-height: 0; width: 100%; }
+.graphic svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 /* chart text */
 .graphic { position: relative; }
@@ -80,7 +55,7 @@
 .basin.outline { fill: none; stroke: var(--ink); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }
 .zoom { transform-origin: 0 0; transition: transform 700ms ease-in-out; }
 .sighting { fill: var(--moth); opacity: 0.75; transition: opacity 200ms; }
-.basin.off, .surface.off, .rain.off, .sighting.off, .sighting.hidden, g.off { opacity: 0; }
+.basin.off, .surface.off, .rain.off, .sighting.off, g.off { opacity: 0; }
 g.off { transition: opacity 400ms; }
 .day { fill: var(--moth); transition: opacity 400ms; }
 .day.dim { opacity: 0.2; }
@@ -88,8 +63,7 @@ g.off { transition: opacity 400ms; }
 .graphic .wind-note { fill: var(--wind); }
 
 /* Open-Meteo asks for a link wherever its data is shown */
-.map-credit { position: absolute; right: 0.9rem; top: 0.4rem; margin: 0; font-size: 0.7rem; visibility: hidden; }
-#story[data-state="rain"] .map-credit, #story[data-state="wind"] .map-credit { visibility: visible; }
+.map-credit { max-width: 30rem; margin: 0.5rem auto 0; padding: 0 0.5rem; font-size: 0.75rem; color: var(--muted); }
 
 /* year bars */
 .bar { fill: var(--moth); }
@@ -98,16 +72,20 @@ g.off { transition: opacity 400ms; }
 .graphic .mark { transition: y 600ms ease-in-out, height 600ms ease-in-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sighting, .basin, .surface, .zoom, .graphic, .graphic .mark, .day, .step p { transition: none; }
+  .sighting, .basin, .surface, .zoom, .graphic .mark, .day { transition: none; }
 }
 
 @media (min-width: 900px) {
-  .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
-  .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; }
-  .sticky { grid-template-rows: 80svh; }
-  .steps { flex: 0 0 25rem; padding: 0 1rem 80svh; }
-  .step:first-child { margin-top: 40svh; }
-  .step[data-scrub] .card { top: 40svh; }
+  .pin { grid-template-rows: none; grid-template-columns: 22rem 1fr; align-items: center; gap: 2rem; max-width: 74rem; margin: 0 auto; padding: 5svh 1.5rem; }
+  .pin .graphic { grid-row: 1; grid-column: 2; height: 90svh; }
+  .replay .card { grid-row: 1; grid-column: 1; }
+  /* caption beside the middle of its chart, the weather credit just under it */
+  .panel { display: grid; grid-template-columns: 22rem 1fr; grid-template-rows: 1fr auto 1fr; column-gap: 2rem; max-width: 74rem; padding: 4rem 1.5rem; }
+  .panel .graphic { grid-column: 2; grid-row: 1 / span 3; height: min(80svh, 44rem); }
+  .panel figcaption, .panel .map-credit { grid-column: 1; margin: 0; padding: 0; }
+  .panel figcaption { grid-row: 2; }
+  .panel .map-credit { grid-row: 3; align-self: start; margin-top: 0.75rem; }
+}
 }
 
 /* replay date and count */
@@ -116,5 +94,5 @@ g.off { transition: opacity 400ms; }
 .graphic .counter-count { font-size: 13px; fill: var(--ink); }
 
 .scroll-on { color: var(--moth); font-weight: 700; transition: opacity 300ms; }
-.is-done .scroll-on { opacity: 0; }
+.replay.is-done .scroll-on { opacity: 0; }
 .scroll-on::after { content: " \2193"; }

@@ -1,54 +1,57 @@
-import { watchSteps } from './scroller.js';
+import { watchScrub } from './scroller.js';
 import * as migration from './graphics/migration.js';
 import * as years from './graphics/years.js';
 import { initLookup } from './lookup.js';
 
 const load = name => fetch(`data/${name}.json`).then(r => r.json());
 
-// The story has one sticky figure. Each step names the chart it shows
-// (data-chart) and that chart's state (data-state).
+// Each graphic names its chart (data-chart) and what that chart shows
+// (data-state). The replay is scrubbed by scrolling, the rest stay put.
 const charts = {
   map: { chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
   bars: { chart: years, data: ['years', 'sightings'] },
 };
 
+function describe(graphic, text) {
+  graphic.querySelector('svg')?.setAttribute('aria-label', text || '');
+}
+
 async function start() {
   const files = {};
   for (const name of ['states', 'sightings', 'regions', 'basin', 'wind', 'surface', 'rain', 'years', 'postcodes']) files[name] = load(name);
 
-  const section = document.getElementById('story');
-  const desc = section.querySelector('.sticky .sr-only');
-  const views = {};
-  for (const graphic of section.querySelectorAll('.graphic')) {
+  const views = [];
+  for (const graphic of document.querySelectorAll('.graphic')) {
     const { chart, data } = charts[graphic.dataset.chart];
-    views[graphic.dataset.chart] = { graphic, view: chart.init(graphic, ...await Promise.all(data.map(d => files[d]))) };
+    const view = chart.init(graphic, ...await Promise.all(data.map(d => files[d])));
+    const show = () => describe(graphic, view.update(graphic.dataset.state));
+    show();
+    views.push({ graphic, view, show });
   }
 
-  let current = section.querySelector('.step');
-  let said = '';
-  const show = (step, progress) => {
-    current = step;
-    const { chart, state } = step.dataset;
-    section.dataset.state = state;
-    const { view } = views[chart];
-    for (const [name, v] of Object.entries(views)) v.graphic.classList.toggle('is-shown', name === chart);
-    const text = view.update(state) || '';
-    if (`${chart}:${state}` !== said) desc.textContent = text;
-    said = `${chart}:${state}`;
-    if (progress !== undefined) step.classList.toggle('is-done', view.setProgress(progress));
-  };
-  show(current);
-  watchSteps(section, show);
+  const replay = document.getElementById('replay');
+  const scrubbed = views.find(v => replay.contains(v.graphic));
+  let progress = 0;
+  watchScrub(replay, p => {
+    progress = p;
+    replay.classList.toggle('is-done', scrubbed.view.setProgress(p));
+  });
 
-  for (const { graphic, view } of Object.values(views)) {
-    let width = graphic.clientWidth;
+  // only animate the charts that are on screen
+  const seen = new IntersectionObserver(entries => {
+    for (const e of entries) views.find(v => v.graphic === e.target).view.pause?.(!e.isIntersecting);
+  });
+
+  for (const v of views) {
+    seen.observe(v.graphic);
+    let width = v.graphic.clientWidth;
     new ResizeObserver(() => {
-      if (graphic.clientWidth === width) return;
-      width = graphic.clientWidth;
-      view.resize();
-      said = '';
-      show(current);
-    }).observe(graphic);
+      if (v.graphic.clientWidth === width) return;
+      width = v.graphic.clientWidth;
+      v.view.resize();
+      v.show();
+      if (v === scrubbed) v.view.setProgress(progress);
+    }).observe(v.graphic);
   }
 
   const year = Number((await files.sightings).start.slice(0, 4));
