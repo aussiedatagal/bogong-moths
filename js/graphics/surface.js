@@ -15,26 +15,54 @@ const SHARE_STOPS = [[0, [43, 42, 40]], [10, [92, 58, 44]], [20, [150, 64, 46]],
 export const LEGEND = SHARE_STOPS.map(([v]) => v);
 export const colour = ramp(SHARE_STOPS);
 
-// Rain as % of average: dry sand below 100, grey at average, deepening blue above
-const RAIN_STOPS = [[75, [150, 118, 78]], [100, [64, 70, 82]], [150, [52, 118, 190]], [200, [150, 205, 255]]];
-export const RAIN_LEGEND = RAIN_STOPS.map(([v]) => v);
-export const rainColour = ramp(RAIN_STOPS);
+// Rain as % of average in the Bureau of Meteorology's bands and colours
+// (its "percentage of mean" rainfall maps). Each band starts at its value.
+export const RAIN_BANDS = [
+  [0, [204, 102, 51]], [20, [255, 102, 51]], [40, [255, 153, 51]], [60, [255, 204, 153]],
+  [80, [255, 255, 204]], [100, [204, 255, 204]], [125, [102, 204, 102]], [150, [0, 153, 0]],
+  [200, [102, 153, 255]], [300, [0, 0, 255]], [400, [102, 0, 153]],
+];
+export const rainColour = value => RAIN_BANDS.findLast(([v]) => v <= value)[1];
 
 // Places with few moth photos nearby fade out instead of showing a noisy share
 const photoFade = weight => Math.min(1, Math.max(0, (weight - 30) / 120));
 
-// One pixel per grid point, stretched over the map so the browser smooths it
-export function drawSurface(parent, surface, project, { paint = colour, fade = photoFade, cls = 'surface', clip } = {}) {
+// Bilinear value at a fractional grid position, from the corners that have data
+function sample(values, cols, rows, x, y) {
+  const i = Math.min(Math.floor(x), cols - 1);
+  const j = Math.min(Math.floor(y), rows - 1);
+  const fx = x - i;
+  const fy = y - j;
+  let sum = 0;
+  let total = 0;
+  for (const [di, dj, w] of [[0, 0, (1 - fx) * (1 - fy)], [1, 0, fx * (1 - fy)], [0, 1, (1 - fx) * fy], [1, 1, fx * fy]]) {
+    const v = values[Math.min(j + dj, rows - 1) * cols + Math.min(i + di, cols - 1)];
+    if (v === null || w === 0) continue;
+    sum += v * w;
+    total += w;
+  }
+  return total ? sum / total : null;
+}
+
+// One pixel per grid point (or `fine` pixels, interpolated, so stepped colour
+// bands get smooth edges), stretched over the map so the browser smooths it
+export function drawSurface(parent, surface, project, { paint = colour, fade = photoFade, cls = 'surface', clip, fine = 1 } = {}) {
   const { cols, rows, share, weight, step, extent: [west, , , north] } = surface;
   const canvas = document.createElement('canvas');
-  canvas.width = cols;
-  canvas.height = rows;
+  canvas.width = cols * fine;
+  canvas.height = rows * fine;
   const ctx = canvas.getContext('2d');
-  const img = ctx.createImageData(cols, rows);
-  share.forEach((v, i) => {
-    if (v === null) return;
-    img.data.set([...paint(v), Math.round(255 * fade(weight[i]))], i * 4);
-  });
+  const img = ctx.createImageData(canvas.width, canvas.height);
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const gx = (x + 0.5) / fine - 0.5;
+      const gy = (y + 0.5) / fine - 0.5;
+      const v = fine === 1 ? share[y * cols + x] : sample(share, cols, rows, Math.max(0, gx), Math.max(0, gy));
+      if (v === null) continue;
+      const w = fine === 1 ? weight[y * cols + x] : sample(weight, cols, rows, Math.max(0, gx), Math.max(0, gy));
+      img.data.set([...paint(v), Math.round(255 * fade(w))], (y * canvas.width + x) * 4);
+    }
+  }
   ctx.putImageData(img, 0, 0);
 
   const [x0, y0] = project([west - step / 2, north + step / 2]);

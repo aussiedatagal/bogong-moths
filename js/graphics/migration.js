@@ -2,7 +2,7 @@ import { el, text, frame } from '../svg.js';
 import { projection, pathData } from '../geo.js';
 import { num, dayLabel } from '../format.js';
 import { initWindflow } from './windflow.js';
-import { drawSurface, colour, LEGEND, rainColour, RAIN_LEGEND } from './surface.js';
+import { drawSurface, colour, LEGEND, rainColour, RAIN_BANDS } from './surface.js';
 
 const EXTENT = [138.5, -39.4, 154.2, -26.2];
 const STRIP = 50;
@@ -72,7 +72,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     // layers start hidden and update() fades in the ones the step needs
     basinPath = el('path', { d: pathData(basin, project), class: 'basin off' }, zoomed);
     shareLayer = drawSurface(zoomed, surface, project, { cls: 'surface off', clip: `land-clip-${uid}` });
-    rainLayer = drawSurface(zoomed, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain off', clip: `basin-clip-${uid}` });
+    rainLayer = drawSurface(zoomed, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain off', fine: 6, clip: `basin-clip-${uid}` });
     dots = null;
 
     labels = el('g', { class: 'labels' }, svg);
@@ -149,7 +149,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     if (cfg.rain) {
       text(labels, 'Autumn and winter rain over', { x: 8, y: 24, class: 'place' });
       text(labels, 'the breeding area, % of average', { x: 8, y: 40, class: 'place' });
-      drawLegend(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_LEGEND, rainColour, v => (v === 75 ? '' : v === 200 ? '200%+' : `${v}%`), 'Outline: breeding area');
+      drawBands(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_BANDS.slice(4, 10), 'Outline: breeding area');
     }
     if (cfg.wind) {
       text(labels, 'Blue: night wind about 1.5 km up,', { x: 8, y: 60, class: 'place wind-note' });
@@ -177,6 +177,19 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
       text(g, label(v), { x: (w * (v - lo)) / (hi - lo), y: 26, 'text-anchor': v === lo ? 'start' : v === hi ? 'end' : 'middle', class: 'muted small' });
     }
     text(g, note, { x: w + 10, y: 9, class: 'muted small' });
+  }
+
+  // Stepped key like the Bureau's: one box per band, labelled at the edges.
+  // The last band only gives the closing label.
+  function drawBands(g, bands, note) {
+    const boxes = bands.slice(0, -1);
+    const w = Math.min(220, width - 140) / boxes.length;
+    bands.forEach(([v, rgb], i) => {
+      if (i < boxes.length) el('rect', { x: i * w, width: w, height: 10, fill: `rgb(${rgb})` }, g);
+      const anchor = i === 0 ? 'start' : i === boxes.length ? 'end' : 'middle';
+      text(g, String(v), { x: i * w, y: 26, 'text-anchor': anchor, class: 'muted small' });
+    });
+    text(g, note, { x: boxes.length * w + 10, y: 9, class: 'muted small' });
   }
 
   // Give each dot its own moment within its day, so scrolling adds them one

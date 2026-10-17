@@ -44,10 +44,12 @@ async function start() {
 
   for (const v of views) {
     seen.observe(v.graphic);
-    let width = v.graphic.clientWidth;
+    // the height moves too once the web font changes the card's size
+    let size = `${v.graphic.clientWidth}x${v.graphic.clientHeight}`;
     new ResizeObserver(() => {
-      if (v.graphic.clientWidth === width) return;
-      width = v.graphic.clientWidth;
+      const now = `${v.graphic.clientWidth}x${v.graphic.clientHeight}`;
+      if (now === size) return;
+      size = now;
       v.view.resize();
       v.show();
       if (v === scrubbed) v.view.setProgress(progress);
