@@ -23,7 +23,9 @@
 .steps {
   position: relative;
   z-index: 1;
-  padding: 0 0.75rem;
+  /* padding, not a margin on the last card: a margin would slip out of the
+     section, and the graphic would leave before the card had passed over it */
+  padding: 0 0.75rem var(--chart);
   pointer-events: none;
 }
 
@@ -36,7 +38,7 @@
   border: 1px solid var(--rule);
   border-radius: 6px;
 }
-.step:last-child { margin-bottom: var(--chart); }
+.step:last-child { margin-bottom: 0; }
 .step p { margin: 0 0 0.6rem; transition: color 250ms; }
 .step p:last-child { margin-bottom: 0; }
 .step[data-scrub] { min-height: 260svh; padding: 0; background: none; border: 0; }
@@ -97,8 +99,7 @@ g.off { transition: opacity 400ms; }
   .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
   .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; }
   .graphic { flex: 0 0 80svh; }
-  .steps { flex: 0 0 25rem; padding: 0 1rem; }
-  .step:last-child { margin-bottom: 80svh; }
+  .steps { flex: 0 0 25rem; padding: 0 1rem 80svh; }
   .step:first-child { margin-top: 40svh; }
   .step[data-scrub] .card { top: 40svh; }
 }

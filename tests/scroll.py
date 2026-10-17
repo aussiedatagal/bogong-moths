@@ -37,7 +37,7 @@ def check_section(page, sid, w, h, problems):
     graphic leaves soon after it, without sitting alone on screen."""
     top = page.evaluate(f"document.getElementById('{sid}').getBoundingClientRect().top + scrollY")
     bottom = page.evaluate(f"document.getElementById('{sid}').getBoundingClientRect().bottom + scrollY")
-    readable, alone, seen_active = 0, 0, set()
+    readable, alone, seen_active, release = 0, 0, set(), None
     for y in range(int(top - h), int(bottom + h), STEP):
         page.evaluate(f"scrollTo(0, {y})")
         settle(page)
@@ -47,11 +47,15 @@ def check_section(page, sid, w, h, problems):
         seen_active |= {m["states"][i] for i, a in enumerate(m["active"]) if a and m["sticky"][1] > 0}
         if pinned and last[0] >= 0 and last[1] <= h + 0.5 and m["active"][-1]:
             readable += STEP
+        if release is None and m["sticky"][0] < -0.5:
+            release = last[1]
         if pinned and last[1] < 0 and not any(c[1] > 0 and c[0] < h for c in m["cards"]):
             alone += STEP
     label = f"{w}x{h} #{sid}"
     if readable < 0.25 * h:
         problems.append(f"{label}: last card fully readable for only {readable}px of scrolling")
+    if release is not None and release > 0.15 * h:
+        problems.append(f"{label}: graphic started leaving with the last card still on screen (its bottom at {round(release)}px)")
     if alone > 0.15 * h:
         problems.append(f"{label}: graphic sat alone for {alone}px after the last card")
     states = set(page.evaluate(MEASURE, sid)["states"])
