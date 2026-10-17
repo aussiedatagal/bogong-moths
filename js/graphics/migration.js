@@ -66,9 +66,10 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     zoomed = el('g', { class: 'zoom' }, el('g', { 'clip-path': 'url(#map-clip)' }, svg));
     const map = zoomed;
     for (const s of states) el('path', { d: pathData(s.geometry, project), class: 'land' }, map);
-    basinPath = el('path', { d: pathData(basin, project), class: 'basin' }, map);
-    shareLayer = drawSurface(map, surface, project, { clip: 'land-clip' });
-    rainLayer = drawSurface(map, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain', clip: 'basin-clip' });
+    // layers start hidden and update() fades in the ones the step needs
+    basinPath = el('path', { d: pathData(basin, project), class: 'basin off' }, map);
+    shareLayer = drawSurface(map, surface, project, { cls: 'surface off', clip: 'land-clip' });
+    rainLayer = drawSurface(map, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain off', clip: 'basin-clip' });
     dots = sightings.points.map(([lon, lat, day]) => {
       const [x, y] = project([lon, lat]);
       return el('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 1.6, class: 'sighting', 'data-day': day }, map);
