@@ -6,6 +6,7 @@ import { initLookup } from './lookup.js';
 const load = name => fetch(`data/${name}.json`).then(r => r.json());
 
 const sections = [
+  { id: 'sightings', chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
   { id: 'years', chart: years, data: ['years', 'sightings'] },
   { id: 'map', chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
 ];

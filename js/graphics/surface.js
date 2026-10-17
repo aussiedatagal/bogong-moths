@@ -24,7 +24,7 @@ export const rainColour = ramp(RAIN_STOPS);
 const photoFade = weight => Math.min(1, Math.max(0, (weight - 30) / 120));
 
 // One pixel per grid point, stretched over the map so the browser smooths it
-export function drawSurface(parent, surface, project, { paint = colour, fade = photoFade, cls = 'surface', clip = 'land-clip' } = {}) {
+export function drawSurface(parent, surface, project, { paint = colour, fade = photoFade, cls = 'surface', clip } = {}) {
   const { cols, rows, share, weight, step, extent: [west, , , north] } = surface;
   const canvas = document.createElement('canvas');
   canvas.width = cols;

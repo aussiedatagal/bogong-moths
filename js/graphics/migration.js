@@ -43,6 +43,8 @@ const countBy = values => values.reduce((n, v) => ({ ...n, [v]: (n[v] || 0) + 1 
 export function init(container, states, sightings, basin, wind, surface, rain) {
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const year = sightings.start.slice(0, 4);
+  // the page has more than one map, so their SVG ids carry the section's id
+  const uid = container.closest('section').id;
   const windNights = `${dayLabel(wind.nights[0], 0)} to ${dayLabel(wind.nights[1], 0)}`;
   const halfway = halfwayDay(sightings.daily);
   let zoomed, place, rainLayer, svg, labels, counter, strip, marker, dots, bars, basinPath, shareLayer, flow, project, width, mapHeight;
@@ -55,20 +57,20 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     project = projection(EXTENT, width, mapHeight);
 
     const defs = el('defs', {}, svg);
-    const clip = el('clipPath', { id: 'map-clip' }, defs);
+    const clip = el('clipPath', { id: `${uid}-map-clip` }, defs);
     el('rect', { width, height: mapHeight }, clip);
-    const landClip = el('clipPath', { id: 'land-clip' }, defs);
+    const landClip = el('clipPath', { id: `${uid}-land-clip` }, defs);
     for (const s of states) el('path', { d: pathData(s.geometry, project) }, landClip);
-    el('path', { d: pathData(basin, project) }, el('clipPath', { id: 'basin-clip' }, defs));
-    const head = el('marker', { id: 'arrow', viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, defs);
+    el('path', { d: pathData(basin, project) }, el('clipPath', { id: `${uid}-basin-clip` }, defs));
+    const head = el('marker', { id: `${uid}-arrow`, viewBox: '0 0 10 10', refX: 6, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto' }, defs);
     el('path', { d: 'M0,0L10,5L0,10Z', class: 'arrow-head' }, head);
 
-    zoomed = el('g', { class: 'zoom' }, el('g', { 'clip-path': 'url(#map-clip)' }, svg));
+    zoomed = el('g', { class: 'zoom' }, el('g', { 'clip-path': `url(#${uid}-map-clip)` }, svg));
     const map = zoomed;
     for (const s of states) el('path', { d: pathData(s.geometry, project), class: 'land' }, map);
     basinPath = el('path', { d: pathData(basin, project), class: 'basin' }, map);
-    shareLayer = drawSurface(map, surface, project);
-    rainLayer = drawSurface(map, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain', clip: 'basin-clip' });
+    shareLayer = drawSurface(map, surface, project, { clip: `${uid}-land-clip` });
+    rainLayer = drawSurface(map, rain, project, { paint: rainColour, fade: w => 0.9 * w, cls: 'rain', clip: `${uid}-basin-clip` });
     dots = sightings.points.map(([lon, lat, day]) => {
       const [x, y] = project([lon, lat]);
       return el('circle', { cx: x.toFixed(1), cy: y.toFixed(1), r: 1.6, class: 'sighting', 'data-day': day }, map);
@@ -122,7 +124,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
       const [bx, by] = place([145.4, -31.4]);
       text(labels, 'Breeding area', { x: bx, y: by, 'text-anchor': 'middle', class: 'place area-label' });
       const [sx, sy] = place([147.2, -32.6]);
-      el('path', { d: `M${sx},${sy}Q${sx - 10},${(sy + ay) / 2} ${ax - 4},${ay - 12}`, class: 'route', 'marker-end': 'url(#arrow)' }, labels);
+      el('path', { d: `M${sx},${sy}Q${sx - 10},${(sy + ay) / 2} ${ax - 4},${ay - 12}`, class: 'route', 'marker-end': `url(#${uid}-arrow)` }, labels);
     }
     if (cfg.surface) {
       for (const c of cfg.notes || cfg.zoom || width >= 500 ? NOTES : []) {
@@ -157,7 +159,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
   function drawLegend(g, stops, paint, label, note) {
     const w = Math.min(220, width - 140);
     const [lo, hi] = [stops[0], stops.at(-1)];
-    const id = `ramp-${lo}`;
+    const id = `${uid}-ramp-${lo}`;
     const grad = el('linearGradient', { id }, el('defs', {}, g));
     for (const v of stops) el('stop', { offset: (v - lo) / (hi - lo), 'stop-color': `rgb(${paint(v)})` }, grad);
     el('rect', { width: w, height: 10, fill: `url(#${id})` }, g);

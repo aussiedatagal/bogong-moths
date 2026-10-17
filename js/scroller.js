@@ -34,7 +34,7 @@ export function watchSteps(section, onStep) {
     const { top, height } = step.getBoundingClientRect();
     const card = step.querySelector('.card');
     const leaves = parseFloat(getComputedStyle(card).top) + card.offsetHeight - height;
-    const end = leaves + innerHeight * 0.1;
+    const end = leaves + innerHeight * 0.05;
     return Math.min(1, Math.max(0, (line - top) / (line - end)));
   }
 

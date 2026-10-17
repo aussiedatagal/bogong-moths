@@ -104,13 +104,14 @@ def main():
             page.on("console", lambda m: m.type == "error" and errors.append(m.text))
             page.goto(URL, wait_until="networkidle")
             page.wait_for_timeout(1000)
-            held = [check_section(page, sid, w, h, problems) for sid in ("years", "map")]
+            sections = page.evaluate("[...document.querySelectorAll('.scrolly')].map(s => s.id)")
+            held = {sid: check_section(page, sid, w, h, problems) for sid in sections}
             check_replay(page, w, h, problems)
             if page.evaluate("document.documentElement.scrollWidth") > w:
                 problems.append(f"{w}x{h}: page scrolls sideways")
             if errors:
                 problems.append(f"{w}x{h}: errors {errors}")
-            print(f"{w}x{h}: last card held for {held[0]}px (bars), {held[1]}px (map)", flush=True)
+            print(f"{w}x{h}: last card held for " + ", ".join(f"{v}px (#{k})" for k, v in held.items()), flush=True)
             page.close()
         browser.close()
     for line in problems:
