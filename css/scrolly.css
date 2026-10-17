@@ -13,11 +13,13 @@
   padding: 0.5rem 0.75rem 0;
   background: var(--bg);
   z-index: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: calc(var(--chart) - 0.5rem);
 }
 
-.graphic { flex: 0 0 calc(var(--chart) - 0.5rem); min-height: 0; width: 100%; }
+/* the charts sit on top of each other and swap in place */
+.graphic { grid-area: 1 / 1; min-height: 0; width: 100%; opacity: 0; visibility: hidden; transition: opacity 400ms, visibility 400ms; }
+.graphic.is-shown { opacity: 1; visibility: visible; }
 .graphic svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 .steps {
@@ -92,13 +94,13 @@ g.off { transition: opacity 400ms; }
 .graphic .mark { transition: y 600ms ease-in-out, height 600ms ease-in-out; }
 
 @media (prefers-reduced-motion: reduce) {
-  .sighting, .basin, .surface, .zoom, .graphic .mark, .day, .step p { transition: none; }
+  .sighting, .basin, .surface, .zoom, .graphic, .graphic .mark, .day, .step p { transition: none; }
 }
 
 @media (min-width: 900px) {
   .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
   .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; }
-  .graphic { flex: 0 0 80svh; }
+  .sticky { grid-template-rows: 80svh; }
   .steps { flex: 0 0 25rem; padding: 0 1rem 80svh; }
   .step:first-child { margin-top: 40svh; }
   .step[data-scrub] .card { top: 40svh; }

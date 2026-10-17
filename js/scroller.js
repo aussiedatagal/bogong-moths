@@ -29,7 +29,7 @@ export function watchSteps(section, onStep) {
       current = index;
       steps.forEach((s, i) => s.classList.toggle('is-active', i === index));
     }
-    onStep(step.dataset.state, scrub);
+    onStep(step, scrub);
   }
 
   addEventListener('scroll', () => {

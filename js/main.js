@@ -5,40 +5,48 @@ import { initLookup } from './lookup.js';
 
 const load = name => fetch(`data/${name}.json`).then(r => r.json());
 
-const sections = [
-  { id: 'sightings', chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
-  { id: 'years', chart: years, data: ['years', 'sightings'] },
-  { id: 'map', chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
-];
+// The story has one sticky figure. Each step names the chart it shows
+// (data-chart) and that chart's state (data-state).
+const charts = {
+  map: { chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
+  bars: { chart: years, data: ['years', 'sightings'] },
+};
 
 async function start() {
   const files = {};
   for (const name of ['states', 'sightings', 'regions', 'basin', 'wind', 'surface', 'rain', 'years', 'postcodes']) files[name] = load(name);
 
-  for (const { id, chart, data } of sections) {
-    const section = document.getElementById(id);
-    const graphic = section.querySelector('.graphic');
-    const desc = section.querySelector('.sticky .sr-only');
-    const args = await Promise.all(data.map(d => files[d]));
-    const view = chart.init(graphic, ...args);
-    let state = section.querySelector('.step').dataset.state;
-    const show = (s, progress) => {
-      if (s !== state || !desc.textContent) desc.textContent = view.update(s) || '';
-      else view.update(s);
-      state = s;
-      section.dataset.state = s;
-      if (progress === undefined) return;
-      const done = view.setProgress(progress);
-      section.querySelector('.step[data-scrub]').classList.toggle('is-done', done);
-    };
-    show(state);
-    watchSteps(section, show);
+  const section = document.getElementById('story');
+  const desc = section.querySelector('.sticky .sr-only');
+  const views = {};
+  for (const graphic of section.querySelectorAll('.graphic')) {
+    const { chart, data } = charts[graphic.dataset.chart];
+    views[graphic.dataset.chart] = { graphic, view: chart.init(graphic, ...await Promise.all(data.map(d => files[d]))) };
+  }
+
+  let current = section.querySelector('.step');
+  let said = '';
+  const show = (step, progress) => {
+    current = step;
+    const { chart, state } = step.dataset;
+    const { view } = views[chart];
+    for (const [name, v] of Object.entries(views)) v.graphic.classList.toggle('is-shown', name === chart);
+    const text = view.update(state) || '';
+    if (`${chart}:${state}` !== said) desc.textContent = text;
+    said = `${chart}:${state}`;
+    if (progress !== undefined) step.classList.toggle('is-done', view.setProgress(progress));
+  };
+  show(current);
+  watchSteps(section, show);
+
+  for (const { graphic, view } of Object.values(views)) {
     let width = graphic.clientWidth;
     new ResizeObserver(() => {
       if (graphic.clientWidth === width) return;
       width = graphic.clientWidth;
       view.resize();
-      show(state);
+      said = '';
+      show(current);
     }).observe(graphic);
   }
 

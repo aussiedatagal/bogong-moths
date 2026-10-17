@@ -35,49 +35,32 @@
       <p>Each year, nature lovers share their photos on the <a href="https://www.inaturalist.org/taxa/200008">iNaturalist</a> app. Scientists use them as crowdsourced field work, mostly to <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12650526/">map where animals and plants live</a>.</p>
     </section>
 
-    <section class="scrolly" id="sightings">
-      <figure class="sticky" aria-describedby="sightings-desc">
-        <div class="graphic"></div>
-        <p class="sr-only" id="sightings-desc" aria-live="polite"></p>
+    <section class="scrolly" id="story">
+      <figure class="sticky" aria-describedby="story-desc">
+        <div class="graphic is-shown" data-chart="map"></div>
+        <div class="graphic" data-chart="bars"></div>
+        <p class="sr-only" id="story-desc" aria-live="polite"></p>
       </figure>
       <div class="steps">
-        <div class="step" data-state="replay" data-scrub>
+        <div class="step" data-chart="map" data-state="replay" data-scrub>
           <div class="card">
             <p>Each dot is a Bogong someone photographed this spring.</p>
             <p class="scroll-on">Keep scrolling to move through the days</p>
           </div>
         </div>
-        <div class="step" data-state="share">
+        <div class="step" data-chart="map" data-state="share">
           <p>Adjusted for where people live, Bogongs stood out most in the Blue Mountains and the Illawarra, with Sydney and the South Coast close behind.</p>
         </div>
-      </div>
-    </section>
-
-    <section class="scrolly" id="years">
-      <figure class="sticky" aria-describedby="years-desc">
-        <div class="graphic"></div>
-        <p class="sr-only" id="years-desc" aria-live="polite"></p>
-      </figure>
-      <div class="steps">
-        <div class="step" data-state="share">
+        <div class="step" data-chart="bars" data-state="share">
           <p>Around Sydney, people have photographed <span data-fact="sydSep26">1,728</span> Bogongs so far this spring. In previous years, Bogongs made up fewer than 1 in <span data-fact="sydBaseFewerThan">40</span> moths photographed there. This year, it was <span class="hl">1 in <span data-fact="oneIn26">3</span></span>. So why are we seeing so many?</p>
         </div>
-      </div>
-    </section>
-
-    <section class="scrolly" id="map">
-      <figure class="sticky" aria-describedby="map-desc">
-        <div class="graphic"></div>
-        <p class="sr-only" id="map-desc" aria-live="polite"></p>
-      </figure>
-      <div class="steps">
-        <div class="step" data-state="route">
+        <div class="step" data-chart="map" data-state="route">
           <p>Bogongs breed over winter on the inland plains. Each spring they fly up to 1,000 km to cool caves in the Snowy Mountains and Victoria's high country, navigating on instinct by <a href="https://www.nature.com/articles/s41586-025-09135-3">the stars</a> and the Earth's magnetic field.</p>
         </div>
-        <div class="step" data-state="rain">
+        <div class="step" data-chart="map" data-state="rain">
           <p>This autumn and winter, rain over the breeding grounds was a third above average. Bogong caterpillars live in the soil there and feed on the plants that come up after rain, so the moths likely had a baby boom of sorts.</p>
         </div>
-        <div class="step" data-state="wind">
+        <div class="step" data-chart="map" data-state="wind">
           <p>So how did they end up in Sydney, when it's not on their flight path? Experts think strong <a href="https://www.abc.net.au/news/2026-09-28/bogong-moths-increase/107202604">north-westerly winds</a> high up blew many off course toward the coast, and <a href="https://www.sbs.com.au/news/article/bogong-moth-migration-australia-2026/p6jdonqa6">city lights</a> drew them down into our homes.</p>
         </div>
       </div>
