@@ -14,7 +14,7 @@ export function watchSteps(section, onStep) {
 
   function check() {
     queued = false;
-    const line = innerHeight * (matchMedia('(min-width: 900px)').matches ? 0.5 : 0.75);
+    const line = innerHeight * (matchMedia('(min-width: 900px)').matches ? 0.5 : 0.85);
     let index = 0;
     steps.forEach((s, i) => { if (s.getBoundingClientRect().top < line) index = i; });
     const step = steps[index];

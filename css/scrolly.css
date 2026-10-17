@@ -1,9 +1,13 @@
 .scrolly { position: relative; }
 
+.scrolly { --chart: 62svh; }
+
+/* On phones the sticky part fills the screen: the graphic on top, the cards
+   scroll through the space below, and both leave together after the last card */
 .sticky {
   position: sticky;
   top: 0;
-  height: 62svh;
+  height: 100svh;
   margin: 0;
   padding: 0.5rem 0.75rem 0;
   background: var(--bg);
@@ -12,13 +16,14 @@
   flex-direction: column;
 }
 
-.graphic { flex: 1 1 auto; min-height: 0; width: 100%; }
+.graphic { flex: 0 0 calc(var(--chart) - 0.5rem); min-height: 0; width: 100%; }
 .graphic svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
 .steps {
   position: relative;
   z-index: 1;
-  padding: 0 0.75rem 30svh;
+  margin-top: calc(var(--chart) - 100svh);
+  padding: 0 0.75rem;
   pointer-events: none;
 }
 
@@ -31,12 +36,13 @@
   border: 1px solid var(--rule);
   border-radius: 6px;
 }
+.step:last-child { margin-bottom: 6svh; }
 .step p { margin: 0 0 0.6rem; transition: color 250ms; }
 .step p:last-child { margin-bottom: 0; }
 .step[data-scrub] { min-height: 260svh; padding: 0; background: none; border: 0; }
 .step[data-scrub] .card {
   position: sticky;
-  top: calc(62svh + 0.5rem);
+  top: calc(var(--chart) + 0.5rem);
   padding: 1rem 1.1rem;
   background: var(--card);
   border: 1px solid var(--rule);
@@ -76,8 +82,6 @@ g.off { transition: opacity 400ms; }
 .day.dim { opacity: 0.2; }
 .windflow { position: absolute; top: 0; left: 0; pointer-events: none; }
 .graphic .wind-note { fill: var(--wind); }
-.scrolly:not([data-state="why"]) .map-credit { visibility: hidden; }
-.map-credit { position: absolute; right: 0.9rem; top: 0.3rem; margin: 0; font-size: 0.7rem; color: var(--muted); }
 
 /* year bars */
 .bar { fill: var(--moth); }
@@ -93,7 +97,8 @@ g.off { transition: opacity 400ms; }
   .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
   .sticky { flex: 1 1 60%; height: 100svh; padding: 2rem 1rem; justify-content: center; }
   .graphic { flex: 0 0 80svh; }
-  .steps { flex: 0 0 25rem; padding: 0 1rem 40svh; }
+  .steps { flex: 0 0 25rem; margin-top: 0; padding: 0 1rem; }
+  .step:last-child { margin-bottom: 35svh; }
   .step:first-child { margin-top: 40svh; }
   .step[data-scrub] .card { top: 40svh; }
 }
