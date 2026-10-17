@@ -64,15 +64,36 @@ def season_records(today):
     return list(rows.values())
 
 
-def build_sightings(rows):
+def inat_complete_through(today):
+    """The last day iNaturalist's records have fully reached the ALA.
+
+    They arrive about a week late and the newest days come in part filled, so
+    a day counts as complete once it has at least 3/4 of the usual daily
+    number of records (all species), judged against the week before it.
+    """
+    since = today - dt.timedelta(days=28)
+    counts = {}
+    for month in sorted({(since + dt.timedelta(days=i)).replace(day=1) for i in range(29)}):
+        fq = [ala.INATURALIST, f"year:{month.year}", f"month:{month.month}", dates(since.isoformat(), today.isoformat())]
+        for day, n in ala.facet("*:*", fq, "day").items():
+            counts[month.replace(day=int(day))] = n
+    days = sorted(counts)
+    for d in reversed(days):
+        week = sorted(counts.get(d - dt.timedelta(days=k), 0) for k in range(1, 8))
+        if counts[d] >= 0.75 * week[3]:
+            return d
+    raise SystemExit("no complete iNaturalist day in the last four weeks")
+
+
+def build_sightings(rows, complete):
     out = []
     for r in rows:
         if not r.get("eventDate") or "decimalLatitude" not in r:
             continue
         day = dt.datetime.fromtimestamp(r["eventDate"] / 1000, TZ).date()
         out.append((day, r["decimalLongitude"], r["decimalLatitude"], (r.get("recordedBy") or ["?"])[0]))
-    # the newest day is still filling up as people upload, so stop the day before
-    last = max(d for d, *_ in out) - dt.timedelta(days=1)
+    # the newest days are still filling up, so stop at the last complete one
+    last = min(max(d for d, *_ in out) - dt.timedelta(days=1), complete)
     days = (last - START).days + 1
     # rounded to about 1 km so no point marks a single house
     pts = sorted(([round(lon, 2), round(lat, 2), (d - START).days] for d, lon, lat, _ in out
@@ -203,7 +224,7 @@ def season_window(last):
 def build_facts(today):
     global SEASON
     rows = season_records(today)
-    last, sydney = build_sightings(rows)
+    last, sydney = build_sightings(rows, inat_complete_through(today))
     SEASON = season_window(last)
     years = build_years()
     aus = australia_checks()

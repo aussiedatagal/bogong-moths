@@ -25,6 +25,7 @@ BUTTERFLIES = "family:(Papilionidae OR Pieridae OR Nymphalidae OR Lycaenidae OR 
 LEPIDOPTERA = "order:Lepidoptera"
 MOTHS = f"{LEPIDOPTERA} AND -{BUTTERFLIES}"  # moths only, butterflies left out
 CONFIRMED = 'identification_verification_status:"research"'
+INATURALIST = "data_resource_uid:dr1411"  # iNaturalist Australia
 
 requests = 0
 
