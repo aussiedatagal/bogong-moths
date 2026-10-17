@@ -2,13 +2,13 @@
 
 .scrolly { --chart: 62svh; }
 
-/* On phones the graphic sits at the top and the cards scroll up underneath it.
-   The last card stops just under the graphic for a while, then both leave
-   together. --stick (set in scroller.js) is the graphic plus that last card. */
+/* On phones the graphic sits at the top and the cards scroll up over it.
+   The room after the last card lets it pass over the graphic, which then
+   scrolls away as soon as the card has gone. */
 .sticky {
   position: sticky;
   top: 0;
-  height: var(--stick, 100svh);
+  height: var(--chart);
   margin: 0;
   padding: 0.5rem 0.75rem 0;
   background: var(--bg);
@@ -23,7 +23,6 @@
 .steps {
   position: relative;
   z-index: 1;
-  margin-top: calc(var(--chart) - var(--stick, 100svh));
   padding: 0 0.75rem;
   pointer-events: none;
 }
@@ -37,9 +36,7 @@
   border: 1px solid var(--rule);
   border-radius: 6px;
 }
-.step:last-child { position: sticky; top: calc(var(--chart) + 0.5rem); margin-bottom: 0; }
-/* room to scroll with the last card held, set in scroller.js */
-.steps::after { content: ''; display: block; height: var(--dwell, 35svh); }
+.step:last-child { margin-bottom: var(--chart); }
 .step p { margin: 0 0 0.6rem; transition: color 250ms; }
 .step p:last-child { margin-bottom: 0; }
 .step[data-scrub] { min-height: 260svh; padding: 0; background: none; border: 0; }
@@ -98,11 +95,10 @@ g.off { transition: opacity 400ms; }
 
 @media (min-width: 900px) {
   .scrolly { display: flex; flex-direction: row-reverse; max-width: 74rem; margin: 0 auto; }
-  /* the graphic's bottom is the sticky block's bottom, so the held last card
-     (bottom-aligned with it in scroller.js) leaves with it */
   .sticky { flex: 1 1 60%; height: 90svh; padding: 10svh 1rem 0; }
   .graphic { flex: 0 0 80svh; }
-  .steps { flex: 0 0 25rem; margin-top: 0; padding: 0 1rem; }
+  .steps { flex: 0 0 25rem; padding: 0 1rem; }
+  .step:last-child { margin-bottom: 80svh; }
   .step:first-child { margin-top: 40svh; }
   .step[data-scrub] .card { top: 40svh; }
 }

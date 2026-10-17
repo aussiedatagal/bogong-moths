@@ -2,10 +2,9 @@
 
     python3 tests/scroll.py [URL]   (default http://localhost:8000/)
 
-At phone and desktop sizes it checks that cards never cover a graphic, that
-the last card in each section is held fully on screen under its graphic for a
-while, that the graphic and that card then leave together, that every step
-becomes active, that the replay prompt fades on the last day, and that there
+At phone and desktop sizes it checks that the last card in each section is
+fully readable while its graphic is pinned, that the graphic leaves soon after
+the card without sitting alone on screen, that every step becomes active, that the replay prompt fades on the last day, and that there
 are no script errors or sideways scrolling. Needs Playwright.
 """
 import sys
@@ -34,42 +33,31 @@ def settle(page):
 
 
 def check_section(page, sid, w, h, problems):
-    phone = w < 900
+    """The last card is fully readable while the graphic is pinned, and the
+    graphic leaves soon after it, without sitting alone on screen."""
     top = page.evaluate(f"document.getElementById('{sid}').getBoundingClientRect().top + scrollY")
     bottom = page.evaluate(f"document.getElementById('{sid}').getBoundingClientRect().bottom + scrollY")
-    held, seen_active, gaps, overlaps = 0, set(), [], 0
-    released = None
+    readable, alone, seen_active = 0, 0, set()
     for y in range(int(top - h), int(bottom + h), STEP):
         page.evaluate(f"scrollTo(0, {y})")
         settle(page)
         m = page.evaluate(MEASURE, sid)
-        g_top, g_bot = m["graphic"][0], m["graphic"][1]
         last = m["cards"][-1]
         pinned = abs(m["sticky"][0]) < 0.5
         seen_active |= {m["states"][i] for i, a in enumerate(m["active"]) if a and m["sticky"][1] > 0}
-        # earlier cards pass over the graphic on their way up; the last one stops below it
-        if phone and g_bot > 0 and last[1] > 0 and last[0] < g_bot - 1 and last[1] > g_top + 1:
-            overlaps += 1
-        fully = last[0] >= 0 and last[1] <= h + 0.5
-        if pinned and fully and m["active"][-1] and (not phone or last[0] >= g_bot - 1):
-            held += STEP
-        if released is None and m["sticky"][0] < -0.5:
-            released = (y, last, m["sticky"][0])
-            if not fully:
-                problems.append(f"{w}x{h} #{sid}: graphic starts leaving before the last card is fully on screen")
-        if phone and released and m["sticky"][1] > 0:
-            gaps.append(round(last[0] - m["sticky"][0]))
+        if pinned and last[0] >= 0 and last[1] <= h + 0.5 and m["active"][-1]:
+            readable += STEP
+        if pinned and last[1] < 0 and not any(c[1] > 0 and c[0] < h for c in m["cards"]):
+            alone += STEP
     label = f"{w}x{h} #{sid}"
-    if overlaps:
-        problems.append(f"{label}: the last card covered the graphic at {overlaps} scroll positions")
-    if held < 0.25 * h:
-        problems.append(f"{label}: last card held under the graphic for only {held}px of scrolling")
-    if phone and gaps and max(gaps) - min(gaps) > 2:
-        problems.append(f"{label}: last card and graphic drift apart while leaving ({min(gaps)} to {max(gaps)}px)")
+    if readable < 0.25 * h:
+        problems.append(f"{label}: last card fully readable for only {readable}px of scrolling")
+    if alone > 0.15 * h:
+        problems.append(f"{label}: graphic sat alone for {alone}px after the last card")
     states = set(page.evaluate(MEASURE, sid)["states"])
     if states - seen_active:
         problems.append(f"{label}: steps never became active: {sorted(states - seen_active)}")
-    return held
+    return readable
 
 
 def check_replay(page, w, h, problems):
@@ -111,7 +99,7 @@ def main():
                 problems.append(f"{w}x{h}: page scrolls sideways")
             if errors:
                 problems.append(f"{w}x{h}: errors {errors}")
-            print(f"{w}x{h}: last card held for " + ", ".join(f"{v}px (#{k})" for k, v in held.items()), flush=True)
+            print(f"{w}x{h}: last card readable for " + ", ".join(f"{v}px (#{k})" for k, v in held.items()), flush=True)
             page.close()
         browser.close()
     for line in problems:
