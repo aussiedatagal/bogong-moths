@@ -15,15 +15,15 @@ const SHARE_STOPS = [[0, [43, 42, 40]], [10, [92, 58, 44]], [20, [150, 64, 46]],
 export const LEGEND = SHARE_STOPS.map(([v]) => v);
 export const colour = ramp(SHARE_STOPS);
 
-// Rain as % of average, one band per 10% from 80%, in the colours of the
-// Bureau of Meteorology's rain radar (light to heavy)
+// Rain as % of average, blended smoothly through the colours of the Bureau
+// of Meteorology's rain radar (light to heavy), one colour per 10% from 80%
 const RADAR = [
   [245, 245, 255], [180, 180, 255], [120, 120, 255], [20, 20, 255], [0, 216, 195],
   [0, 150, 144], [0, 102, 102], [255, 255, 0], [255, 200, 0], [255, 150, 0],
   [255, 100, 0], [255, 0, 0], [200, 0, 0], [120, 0, 0], [40, 0, 0],
 ];
-export const RAIN_BANDS = RADAR.map((rgb, i) => [80 + i * 10, rgb]);
-export const rainColour = value => (RAIN_BANDS.findLast(([v]) => v <= value) || RAIN_BANDS[0])[1];
+export const RAIN_STOPS = RADAR.map((rgb, i) => [80 + i * 10, rgb]);
+export const rainColour = ramp(RAIN_STOPS);
 
 // Places with few moth photos nearby fade out instead of showing a noisy share
 const photoFade = weight => Math.min(1, Math.max(0, (weight - 30) / 120));
@@ -45,8 +45,8 @@ function sample(values, cols, rows, x, y) {
   return total ? sum / total : null;
 }
 
-// One pixel per grid point (or `fine` pixels, interpolated, so stepped colour
-// bands get smooth edges), stretched over the map so the browser smooths it
+// One pixel per grid point (or `fine` pixels, values interpolated before
+// colouring so a many-colour ramp blends cleanly), stretched over the map
 export function drawSurface(parent, surface, project, { paint = colour, fade = photoFade, cls = 'surface', clip, fine = 1 } = {}) {
   const { cols, rows, share, weight, step, extent: [west, , , north] } = surface;
   const canvas = document.createElement('canvas');

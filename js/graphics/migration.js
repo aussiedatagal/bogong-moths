@@ -2,7 +2,7 @@ import { el, text, frame } from '../svg.js';
 import { projection, pathData } from '../geo.js';
 import { num, dayLabel } from '../format.js';
 import { initWindflow } from './windflow.js';
-import { drawSurface, colour, LEGEND, rainColour, RAIN_BANDS } from './surface.js';
+import { drawSurface, colour, LEGEND, rainColour, RAIN_STOPS } from './surface.js';
 
 const EXTENT = [138.5, -39.4, 154.2, -26.2];
 const STRIP = 50;
@@ -149,7 +149,7 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     if (cfg.rain) {
       text(labels, 'Autumn and winter rain over', { x: 8, y: 24, class: 'place' });
       text(labels, 'the breeding area, % of average', { x: 8, y: 40, class: 'place' });
-      drawBands(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_BANDS, [100, 150, 200], 'Outline: breeding area');
+      drawGradient(el('g', { transform: `translate(4,${mapHeight + 10})` }, labels), RAIN_STOPS, [100, 150, 200], 'Outline: breeding area');
     }
     if (cfg.wind) {
       text(labels, 'Blue: night wind about 1.5 km up,', { x: 8, y: 60, class: 'place wind-note' });
@@ -179,14 +179,17 @@ export function init(container, states, sightings, basin, wind, surface, rain) {
     text(g, note, { x: w + 10, y: 9, class: 'muted small' });
   }
 
-  // Stepped key like the Bureau's: one box per band, a few edges labelled
-  function drawBands(g, bands, labelled, note) {
-    const w = Math.min(225, width - 140) / bands.length;
-    bands.forEach(([v, rgb], i) => {
-      el('rect', { x: i * w, width: w, height: 10, fill: `rgb(${rgb})` }, g);
-      if (labelled.includes(v)) text(g, `${v}%`, { x: i * w, y: 26, 'text-anchor': 'middle', class: 'muted small' });
-    });
-    text(g, note, { x: bands.length * w + 10, y: 9, class: 'muted small' });
+  // Smooth key through the radar colours, a few values labelled
+  function drawGradient(g, stops, labelled, note) {
+    const w = Math.min(225, width - 140);
+    const [lo, hi] = [stops[0][0], stops.at(-1)[0]];
+    const x = v => ((v - lo) / (hi - lo)) * w;
+    const id = `rain-legend-${uid}`;
+    const grad = el('linearGradient', { id }, el('defs', {}, g));
+    for (const [v, rgb] of stops) el('stop', { offset: x(v) / w, 'stop-color': `rgb(${rgb})` }, grad);
+    el('rect', { width: w, height: 10, fill: `url(#${id})` }, g);
+    for (const v of labelled) text(g, `${v}%`, { x: x(v), y: 26, 'text-anchor': 'middle', class: 'muted small' });
+    text(g, note, { x: w + 10, y: 9, class: 'muted small' });
   }
 
   // Give each dot its own moment within its day, so scrolling adds them one
