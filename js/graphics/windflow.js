@@ -61,22 +61,45 @@ export function initWindflow(container, wind, project, width, height) {
     ctx.stroke();
   }
 
-  // Without motion the streaks don't show which way the wind blows,
-  // so the still version gets a small arrowhead on each one
-  function arrowheads() {
-    ctx.beginPath();
-    for (const pt of particles) {
-      const [u, v] = at(pt.lon, pt.lat);
-      if (!u && !v) continue;
-      const [x, y] = project([pt.lon, pt.lat]);
-      const [x2, y2] = project([pt.lon + u * 0.01, pt.lat + v * 0.01]);
-      const angle = Math.atan2(y2 - y, x2 - x);
-      for (const side of [-1, 1]) {
-        ctx.moveTo(x, y);
-        ctx.lineTo(x - 3.5 * Math.cos(angle + side * 0.45), y - 3.5 * Math.sin(angle + side * 0.45));
+  // Without motion, one long streamline from each point of an even grid,
+  // fading in from its tail to an arrowhead, shows which way the wind blows
+  function streamlines() {
+    const gap = 36;
+    const steps = 100;
+    for (let gy = gap / 2; gy < height; gy += gap) {
+      for (let gx = gap / 2; gx < width; gx += gap) {
+        const x0 = gx + (Math.random() - 0.5) * gap * 0.6;
+        const y0 = gy + (Math.random() - 0.5) * gap * 0.6;
+        let [lon, lat] = project.invert([x0, y0]);
+        if (lon < west || lon > east || lat < south || lat > north) continue;
+        const line = [project([lon, lat])];
+        for (let k = 0; k < steps; k++) {
+          const [u, v] = at(lon, lat);
+          lon += (u * SPEED) / Math.cos((lat * Math.PI) / 180);
+          lat += v * SPEED;
+          if (lon < west || lon > east || lat < south || lat > north) break;
+          line.push(project([lon, lat]));
+        }
+        if (line.length < 10) continue;
+        for (let k = 1; k < line.length; k++) {
+          ctx.globalAlpha = 0.15 + 0.85 * (k / line.length);
+          ctx.beginPath();
+          ctx.moveTo(...line[k - 1]);
+          ctx.lineTo(...line[k]);
+          ctx.stroke();
+        }
+        const [x, y] = line.at(-1);
+        const [px, py] = line.at(-4);
+        const angle = Math.atan2(y - py, x - px);
+        ctx.beginPath();
+        for (const side of [-1, 1]) {
+          ctx.moveTo(x, y);
+          ctx.lineTo(x - 5 * Math.cos(angle + side * 0.5), y - 5 * Math.sin(angle + side * 0.5));
+        }
+        ctx.stroke();
+        ctx.globalAlpha = 1;
       }
     }
-    ctx.stroke();
   }
 
   function loop() {
@@ -92,11 +115,9 @@ export function initWindflow(container, wind, project, width, height) {
     start(still) {
       if (frame) return;
       if (still) {
-        // reduced motion: draw short static streaks instead of animating
+        // reduced motion: draw streamlines instead of animating
         ctx.clearRect(0, 0, width, height);
-        particles = Array.from({ length: count }, spawn);
-        for (let k = 0; k < 30; k++) step();
-        arrowheads();
+        streamlines();
         return;
       }
       loop();
