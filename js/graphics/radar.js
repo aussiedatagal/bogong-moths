@@ -2,10 +2,10 @@ import { loadFrames } from './radar-frames.js';
 import { legend } from './radar-palette.js';
 
 // Sydney's rain radar through one dry night: the raw radar plays from late
-// afternoon to 2am, with the Bureau's rain-only view and Bogong sightings
-// as toggles, and two gauges comparing radar "rain" with rain gauges.
+// afternoon to 2am, with two buckets underneath comparing the rain the radar
+// suggests with the rain the gauges measured.
 
-// Labels that would sit under the gauges go on the left of their dot
+// Labels that would sit under the clock or key go on the left of their dot
 const LABEL_LEFT = new Set(['Gosford']);
 
 const clock = t => {
@@ -20,6 +20,15 @@ function el(tag, attrs = {}, parent) {
   return e;
 }
 
+function bucket(parent, label) {
+  const b = el('div', { className: 'radar-bucket' }, parent);
+  const fill = el('i', {}, el('div', { className: 'tube' }, b));
+  const text = el('p', {}, b);
+  const value = el('b', {}, text);
+  text.append(label);
+  return { fill, value };
+}
+
 export function init(container, night, land) {
   container.classList.add('radar-view');
   const stage = el('div', { className: 'radar-stage' }, container);
@@ -28,56 +37,46 @@ export function init(container, night, land) {
   const time = el('div', { className: 'radar-clock' }, stage);
   const timeText = el('span', {}, time);
   const sunText = el('span', { className: 'radar-sun' }, time);
-  const gauges = el('div', { className: 'radar-gauges' }, stage);
-  const gauge = label => {
-    const g = el('div', { className: 'radar-gauge' }, gauges);
-    const fill = el('i', {}, el('div', { className: 'tube' }, g));
-    const text = el('p', {}, g);
-    const value = el('b', {}, text);
-    text.append(label);
-    return { fill, value };
-  };
-  const radarGauge = gauge('radar');
-  const rainGauge = gauge('rain gauges');
   const key = el('div', { className: 'radar-key' }, stage);
   key.innerHTML = '<span>light</span><i></i><span>heavy</span>';
   key.querySelector('i').style.background = legend;
+
+  const buckets = el('div', { className: 'radar-buckets' }, container);
+  const radarBucket = bucket(buckets, "Supposed rainfall, according to BOM's radar");
+  const gaugeBucket = bucket(buckets, "Actual rainfall, measured by BOM's rain gauges");
 
   const controls = el('div', { className: 'radar-controls' }, container);
   const play = el('button', { type: 'button', className: 'radar-play' }, controls);
   const slider = el('input', { type: 'range', min: 0, max: night.times.length - 1, value: 0 }, controls);
   slider.setAttribute('aria-label', 'Time of night');
-  const toggles = el('div', { className: 'radar-toggles' }, container);
-  const toggle = text => {
-    const b = el('button', { type: 'button', className: 'radar-toggle', textContent: text }, toggles);
-    b.setAttribute('aria-pressed', 'false');
-    return b;
-  };
-  const filterBtn = toggle("Bureau's rain filter");
-  const mothBtn = toggle('Bogong sightings');
+  const filterBtn = el('button', { type: 'button', className: 'radar-toggle', textContent: 'Rain filter' }, controls);
+  filterBtn.setAttribute('aria-pressed', 'false');
+  filterBtn.title = "Show BOM's cleaned radar, which keeps only rain";
 
-  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // With reduced motion the night plays through once and stops; otherwise it loops
+  const loop = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sunset = night.times.indexOf('18:00');
+  const last = night.times.length - 1;
   const R = night.radiusKm;
   let frame = null;
   let base = null;
-  let side = 0;
-  let i = reduceMotion ? night.times.indexOf('22:00') : 0;
+  let i = 0;
   let filtered = false;
-  let moths = false;
-  let wanted = !reduceMotion;
+  let wanted = true;
+  let touched = false;
   let visible = false;
   let timer = null;
 
   const toPx = (x, y) => [(x + R) / (2 * R) * canvas.width, (y + R) / (2 * R) * canvas.height];
 
   function drawBase() {
+    const css = getComputedStyle(container);
     base = document.createElement('canvas');
     base.width = base.height = canvas.width;
     const g = base.getContext('2d');
-    g.fillStyle = getComputedStyle(container).getPropertyValue('--bg') || '#0f141d';
+    g.fillStyle = css.getPropertyValue('--bg').trim() || '#0f141d';
     g.fillRect(0, 0, base.width, base.height);
-    g.fillStyle = g.strokeStyle = getComputedStyle(container).getPropertyValue('--land') || '#1c2431';
+    g.fillStyle = g.strokeStyle = css.getPropertyValue('--land').trim() || '#1c2431';
     g.lineWidth = 1.5;
     for (const ring of land) {
       g.beginPath();
@@ -100,26 +99,16 @@ export function init(container, night, land) {
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(tile, 0, 0, canvas.width, canvas.height);
     }
-    if (moths) {
-      ctx.strokeStyle = '#f0b24a';
-      ctx.lineWidth = 1.4 * s;
-      for (const [x, y] of night.sightings) {
-        const [px, py] = toPx(x, y);
-        ctx.beginPath();
-        ctx.arc(px, py, 3.2 * s, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
     ctx.font = `700 ${Math.round(13 * s)}px "Atkinson Hyperlegible", sans-serif`;
     ctx.textBaseline = 'middle';
     for (const [name, [x, y]] of Object.entries(night.places)) {
       const [px, py] = toPx(x, y);
+      const left = LABEL_LEFT.has(name);
+      const tx = left ? px - 6 * s : px + 6 * s;
       ctx.fillStyle = '#ece7db';
       ctx.beginPath();
       ctx.arc(px, py, 2.5 * s, 0, Math.PI * 2);
       ctx.fill();
-      const left = LABEL_LEFT.has(name);
-      const tx = left ? px - 6 * s : px + 6 * s;
       ctx.textAlign = left ? 'right' : 'left';
       ctx.lineWidth = 3 * s;
       ctx.strokeStyle = 'rgba(15, 20, 29, 0.85)';
@@ -130,38 +119,45 @@ export function init(container, night, land) {
     timeText.textContent = clock(night.times[i]);
     sunText.textContent = i < sunset - 1 ? 'before sunset' : i <= sunset + 1 ? 'sunset' : 'after dark';
     slider.value = i;
-    const share = (i + 1) / night.times.length;
     const full = night.facts.radarMm;
-    const radarNow = (filtered ? night.facts.cleanMm : full) * share;
-    radarGauge.fill.style.height = `${radarNow / full * 100}%`;
-    radarGauge.value.textContent = `${radarNow.toFixed(1)} mm`;
+    const radarNow = (filtered ? night.facts.cleanMm : full) * (i + 1) / night.times.length;
+    radarBucket.fill.style.height = `${radarNow / full * 100}%`;
+    radarBucket.value.textContent = `${radarNow.toFixed(1)} mm`;
   }
 
-  rainGauge.fill.style.height = `${night.facts.gaugeMm / night.facts.radarMm * 100}%`;
-  rainGauge.value.textContent = `${night.facts.gaugeMm} mm`;
+  gaugeBucket.fill.style.height = `${night.facts.gaugeMm / night.facts.radarMm * 100}%`;
+  gaugeBucket.value.textContent = `${night.facts.gaugeMm} mm`;
+
+  function step() {
+    if (i === last) {
+      if (!loop) { wanted = false; run(); return; }
+      i = 0;
+    } else {
+      i += 1;
+    }
+    draw();
+  }
 
   function run() {
     const go = wanted && visible && frame;
     play.textContent = wanted ? 'Pause' : 'Play';
     play.setAttribute('aria-pressed', String(wanted));
-    if (go && !timer) {
-      timer = setInterval(() => { i = (i + 1) % night.times.length; draw(); }, 110);
-    } else if (!go && timer) {
-      clearInterval(timer);
-      timer = null;
-    }
+    if (go && !timer) timer = setInterval(step, 110);
+    else if (!go && timer) { clearInterval(timer); timer = null; }
   }
 
-  play.addEventListener('click', () => { wanted = !wanted; run(); });
-  slider.addEventListener('input', () => { wanted = false; run(); i = +slider.value; draw(); });
-  for (const [btn, set] of [[filterBtn, v => (filtered = v)], [mothBtn, v => (moths = v)]]) {
-    btn.addEventListener('click', () => {
-      const on = btn.getAttribute('aria-pressed') !== 'true';
-      btn.setAttribute('aria-pressed', String(on));
-      set(on);
-      draw();
-    });
-  }
+  play.addEventListener('click', () => {
+    touched = true;
+    if (!wanted && i === last) i = 0;
+    wanted = !wanted;
+    run();
+  });
+  slider.addEventListener('input', () => { touched = true; wanted = false; run(); i = +slider.value; draw(); });
+  filterBtn.addEventListener('click', () => {
+    filtered = !filtered;
+    filterBtn.setAttribute('aria-pressed', String(filtered));
+    draw();
+  });
 
   // The frames are a few MB, so fetch them only when the reader gets close
   const near = new IntersectionObserver(entries => {
@@ -172,8 +168,8 @@ export function init(container, night, land) {
   near.observe(container);
 
   function resize() {
-    const controlsH = controls.offsetHeight + toggles.offsetHeight + 16;
-    side = Math.max(200, Math.min(container.clientWidth, container.clientHeight - controlsH));
+    const below = buckets.offsetHeight + controls.offsetHeight + 16;
+    const side = Math.max(200, Math.min(container.clientWidth, container.clientHeight - below));
     stage.style.width = stage.style.height = `${side}px`;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = canvas.height = Math.round(side * dpr);
@@ -185,9 +181,15 @@ export function init(container, night, land) {
   return {
     update: () => {
       draw();
-      return `Animated rain radar over Sydney on the night of 30 September ${night.date.slice(0, 4)}. After sunset the radar fills with light "rain" over the whole city while rain gauges recorded almost nothing.`;
+      return `Animated rain radar over Sydney on the night of 30 September ${night.date.slice(0, 4)}. After sunset the radar fills with light "rain" over the whole city, adding up to ${night.facts.radarMm} mm, while rain gauges measured ${night.facts.gaugeMm} mm.`;
     },
     resize,
-    pause: hidden => { visible = !hidden; run(); },
+    // Each time the reader arrives, start again from late afternoon unless they've taken over
+    pause: hidden => {
+      const arriving = !visible && !hidden;
+      visible = !hidden;
+      if (arriving && !touched) { i = 0; wanted = true; draw(); }
+      run();
+    },
   };
 }
