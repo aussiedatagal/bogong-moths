@@ -2,7 +2,7 @@ import { loadFrames } from './radar-frames.js';
 import { legend } from './radar-palette.js';
 
 // Sydney's rain radar through one dry night: the raw radar plays from late
-// afternoon to 2am, with two buckets underneath comparing the rain the radar
+// afternoon to 2am on a loop, with two buckets underneath comparing the rain the radar
 // suggests with the rain the gauges measured.
 
 // Labels that would sit under the clock or key go on the left of their dot
@@ -49,19 +49,12 @@ export function init(container, night, land) {
   const play = el('button', { type: 'button', className: 'radar-play' }, controls);
   const slider = el('input', { type: 'range', min: 0, max: night.times.length - 1, value: 0 }, controls);
   slider.setAttribute('aria-label', 'Time of night');
-  const filterBtn = el('button', { type: 'button', className: 'radar-toggle', textContent: 'Rain filter' }, controls);
-  filterBtn.setAttribute('aria-pressed', 'false');
-  filterBtn.title = "Show BOM's cleaned radar, which keeps only rain";
-
-  // With reduced motion the night plays through once and stops; otherwise it loops
-  const loop = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   const sunset = night.times.indexOf('18:00');
   const last = night.times.length - 1;
   const R = night.radiusKm;
   let frame = null;
   let base = null;
   let i = 0;
-  let filtered = false;
   let wanted = true;
   let touched = false;
   let visible = false;
@@ -95,7 +88,7 @@ export function init(container, night, land) {
     const s = canvas.width / 400;
     ctx.drawImage(base, 0, 0);
     if (frame) {
-      tile.getContext('2d').putImageData(frame(i, filtered ? 1 : 0), 0, 0);
+      tile.getContext('2d').putImageData(frame(i, 0), 0, 0);
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(tile, 0, 0, canvas.width, canvas.height);
     }
@@ -120,7 +113,7 @@ export function init(container, night, land) {
     sunText.textContent = i < sunset - 1 ? 'before sunset' : i <= sunset + 1 ? 'sunset' : 'after dark';
     slider.value = i;
     const full = night.facts.radarMm;
-    const radarNow = (filtered ? night.facts.cleanMm : full) * (i + 1) / night.times.length;
+    const radarNow = full * (i + 1) / night.times.length;
     radarBucket.fill.style.height = `${radarNow / full * 100}%`;
     radarBucket.value.textContent = `${radarNow.toFixed(1)} mm`;
   }
@@ -129,12 +122,7 @@ export function init(container, night, land) {
   gaugeBucket.value.textContent = `${night.facts.gaugeMm} mm`;
 
   function step() {
-    if (i === last) {
-      if (!loop) { wanted = false; run(); return; }
-      i = 0;
-    } else {
-      i += 1;
-    }
+    i = i === last ? 0 : i + 1;
     draw();
   }
 
@@ -148,16 +136,10 @@ export function init(container, night, land) {
 
   play.addEventListener('click', () => {
     touched = true;
-    if (!wanted && i === last) i = 0;
     wanted = !wanted;
     run();
   });
   slider.addEventListener('input', () => { touched = true; wanted = false; run(); i = +slider.value; draw(); });
-  filterBtn.addEventListener('click', () => {
-    filtered = !filtered;
-    filterBtn.setAttribute('aria-pressed', String(filtered));
-    draw();
-  });
 
   // The frames are a few MB, so fetch them only when the reader gets close
   const near = new IntersectionObserver(entries => {
