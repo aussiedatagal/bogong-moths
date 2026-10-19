@@ -1,6 +1,7 @@
 import { watchScrub } from './scroller.js';
 import * as migration from './graphics/migration.js';
 import * as years from './graphics/years.js';
+import * as radar from './graphics/radar.js';
 import { initLookup } from './lookup.js';
 
 const load = name => fetch(`data/${name}.json`).then(r => r.json());
@@ -10,6 +11,7 @@ const load = name => fetch(`data/${name}.json`).then(r => r.json());
 const charts = {
   map: { chart: migration, data: ['states', 'sightings', 'basin', 'wind', 'surface', 'rain'] },
   bars: { chart: years, data: ['years', 'sightings'] },
+  radar: { chart: radar, data: ['radar', 'radar_land'] },
 };
 
 function describe(graphic, text) {
@@ -18,7 +20,7 @@ function describe(graphic, text) {
 
 async function start() {
   const files = {};
-  for (const name of ['states', 'sightings', 'regions', 'basin', 'wind', 'surface', 'rain', 'years', 'postcodes']) files[name] = load(name);
+  for (const name of ['states', 'sightings', 'regions', 'basin', 'wind', 'surface', 'rain', 'years', 'postcodes', 'radar', 'radar_land']) files[name] = load(name);
 
   const replay = document.getElementById('replay');
   let progress = 0;

@@ -1,0 +1,35 @@
+/* Radar night: a square map with the clock, gauges and colour key laid over
+   its corners, then the play controls and toggles underneath. */
+.radar-view { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-height: 0; }
+.radar-stage { position: relative; flex: none; }
+.radar-stage canvas { width: 100%; height: 100%; display: block; border-radius: 6px; }
+
+.radar-clock { position: absolute; top: 0.5rem; left: 0.6rem; display: grid; text-shadow: 0 1px 3px #000; pointer-events: none; }
+.radar-clock span:first-child { font: 600 2rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.radar-sun { font-size: 0.85rem; color: var(--moth); }
+
+.radar-gauges { position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.7rem; padding: 0.4rem 0.55rem; background: rgba(15, 20, 29, 0.85); border: 1px solid var(--rule); border-radius: 6px; pointer-events: none; }
+.radar-gauge { display: grid; justify-items: center; gap: 0.2rem; }
+.radar-gauge .tube { width: 1.4rem; height: 4.5rem; border: 2px solid var(--muted); border-top: 0; border-radius: 0 0 0.5rem 0.5rem; position: relative; overflow: hidden; background: rgba(15, 20, 29, 0.6); }
+.radar-gauge .tube i { position: absolute; left: 0; right: 0; bottom: 0; background: #2f6bff; }
+.radar-gauge p { margin: 0; font-size: 0.7rem; line-height: 1.2; color: var(--muted); text-align: center; }
+.radar-gauge b { display: block; font-size: 0.85rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+.radar-key { position: absolute; bottom: 0.5rem; right: 0.6rem; display: flex; align-items: center; gap: 0.35rem; font-size: 0.7rem; color: var(--muted); pointer-events: none; }
+.radar-key i { width: 4.5rem; height: 0.45rem; border-radius: 2px; }
+
+.radar-controls { display: grid; grid-template-columns: auto 1fr; gap: 0.75rem; align-items: center; width: 100%; max-width: 40rem; }
+.radar-toggles { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.radar-view button { font: 700 0.9rem var(--body); color: var(--ink); background: var(--land); border: 1px solid var(--land-edge); border-radius: 999px; padding: 0.45rem 0.95rem; min-height: 44px; cursor: pointer; }
+.radar-view button:focus-visible, .radar-view input:focus-visible { outline: 2px solid var(--moth); outline-offset: 2px; }
+.radar-view .radar-toggle[aria-pressed="true"] { background: var(--moth); color: var(--bg); border-color: var(--moth); }
+.radar-view input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--moth); }
+
+@media (min-width: 900px) {
+  .radar-clock span:first-child { font-size: 2.6rem; }
+  .radar-gauge .tube { height: 6rem; width: 1.8rem; }
+  .radar-gauge p { font-size: 0.8rem; }
+  .radar-gauge b { font-size: 1rem; }
+  .radar-sun { font-size: 1rem; }
+  .radar-key { font-size: 0.8rem; }
+}

@@ -31,7 +31,7 @@ REPLAY = """() => {
 # How far the highest bit of text in each chart pokes above the chart's top edge
 CHARTS = """() => [...document.querySelectorAll('.graphic')].map(g => {
   const top = g.getBoundingClientRect().top;
-  const svg = g.querySelector('svg');
+  const svg = g.querySelector('svg, canvas');
   const texts = [...g.querySelectorAll('text')].filter(t => t.textContent && t.getBBox().width);
   return {
     state: `${g.dataset.chart}:${g.dataset.state}`,
