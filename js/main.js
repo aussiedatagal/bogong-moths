@@ -44,10 +44,11 @@ async function start() {
 
   const scrubbed = views.find(v => replay.contains(v.graphic));
 
-  // only animate the charts that are on screen
+  // only animate the charts that are mostly on screen, so an animation starts
+  // when the reader arrives, not while the panel is peeking in from below
   const seen = new IntersectionObserver(entries => {
-    for (const e of entries) views.find(v => v.graphic === e.target).view.pause?.(!e.isIntersecting);
-  });
+    for (const e of entries) views.find(v => v.graphic === e.target).view.pause?.(e.intersectionRatio < 0.6);
+  }, { threshold: [0, 0.6] });
 
   for (const v of views) {
     seen.observe(v.graphic);
