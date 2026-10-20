@@ -49,6 +49,7 @@ export function init(container, night, land) {
   const play = el('button', { type: 'button', className: 'radar-play' }, controls);
   const slider = el('input', { type: 'range', min: 0, max: night.times.length - 1, value: 0 }, controls);
   slider.setAttribute('aria-label', 'Time of night');
+  el('a', { className: 'radar-download', href: 'img/sydney-radar-30-sep.gif', download: 'sydney-radar-30-sep.gif', textContent: 'Download GIF' }, controls);
   const sunset = night.times.indexOf('18:00');
   const last = night.times.length - 1;
   const R = night.radiusKm;
