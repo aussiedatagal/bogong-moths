@@ -25,6 +25,7 @@
 .radar-view input[type="range"] { width: 100%; min-height: 44px; accent-color: var(--moth); }
 
 @media (min-width: 900px) {
+  .radar-view { align-items: flex-start; }
   .radar-clock span:first-child { font-size: 2.6rem; }
   .radar-sun { font-size: 1rem; }
   .radar-key { font-size: 0.8rem; }

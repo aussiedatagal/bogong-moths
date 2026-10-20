@@ -150,9 +150,19 @@ export function init(container, night, land) {
   }, { rootMargin: '150% 0px' });
   near.observe(container);
 
-  function resize() {
+  // On wide screens the buckets and controls line up under the map, so measure twice:
+  // their height depends on their width. On phones they keep the full width.
+  const wide = window.matchMedia('(min-width: 900px)');
+  function fit() {
     const below = buckets.offsetHeight + controls.offsetHeight + 16;
     const side = Math.max(200, Math.min(container.clientWidth, container.clientHeight - below));
+    buckets.style.width = controls.style.width = wide.matches ? `${side}px` : '';
+    return side;
+  }
+
+  function resize() {
+    fit();
+    const side = fit();
     stage.style.width = stage.style.height = `${side}px`;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = canvas.height = Math.round(side * dpr);
