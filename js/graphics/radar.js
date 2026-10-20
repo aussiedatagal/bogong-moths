@@ -113,7 +113,7 @@ export function init(container, night, land) {
     sunText.textContent = i < sunset - 1 ? 'before sunset' : i <= sunset + 1 ? 'sunset' : 'after dark';
     slider.value = i;
     const full = night.facts.radarMm;
-    const radarNow = full * (i + 1) / night.times.length;
+    const radarNow = night.facts.radarRunning[i];
     radarBucket.fill.style.height = `${radarNow / full * 100}%`;
     radarBucket.value.textContent = `${radarNow.toFixed(1)} mm`;
   }
