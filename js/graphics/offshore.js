@@ -6,6 +6,9 @@ import { loadFrames } from './radar-frames.js';
 
 const NIGHT_SECONDS = 24;
 const HOLD_SECONDS = 2.5;
+const SWARM_KM2 = 2500;    // outline the swarm once this much echo sits more than 8 km offshore
+const PX_PER_KMH = 3;      // arrow length
+const ANCHOR = [151.5, -33.85]; // where the arrows start when there's no outline
 
 const clock = utc => {
   const t = new Date(`${utc}Z`);
@@ -90,6 +93,43 @@ export function init(container, night, coast) {
     }
   }
 
+  // offset: pixels to the side of the line, so two arrows from one point sit side by side
+  function arrow(x0, y0, [u, v], stroke, text, below, offset = 0) {
+    const len = Math.hypot(u, v) * PX_PER_KMH, a = Math.atan2(v, u);
+    const x = x0 + Math.sin(a) * offset, y = y0 + Math.cos(a) * offset;
+    const tx = x + Math.cos(a) * len, ty = y - Math.sin(a) * len;
+    g.strokeStyle = g.fillStyle = stroke; g.lineWidth = 3; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(x, y); g.lineTo(tx, ty); g.stroke();
+    const h = 9, s1 = a + Math.PI * 0.85, s2 = a - Math.PI * 0.85;
+    g.beginPath(); g.moveTo(tx + Math.cos(a) * 3, ty - Math.sin(a) * 3);
+    g.lineTo(tx + Math.cos(s1) * h, ty - Math.sin(s1) * h); g.lineTo(tx + Math.cos(s2) * h, ty - Math.sin(s2) * h);
+    g.closePath(); g.fill();
+    g.font = `600 12px ${colour('--body')}`; g.textAlign = 'left';
+    g.strokeStyle = 'rgba(0,0,0,0.7)'; g.lineWidth = 3;
+    const lx = tx + 6, ly = ty + (below ? 14 : -6);
+    g.strokeText(text, lx, ly); g.fillText(text, lx, ly);
+  }
+
+  function notes() {
+    const n = night.notes?.[i];
+    if (!n) return;
+    let at = px(...ANCHOR);
+    if (n.swarm && n.swarm[4] >= SWARM_KM2) {
+      const [lon, lat, sdx, sdy] = n.swarm, [cx, cy] = px(lon, lat);
+      const [ex] = px(lon + sdx, lat), [, ey] = px(lon, lat - sdy);
+      g.setLineDash([6, 5]); g.strokeStyle = colour('--moth'); g.lineWidth = 2;
+      g.beginPath(); g.ellipse(cx, cy, Math.max(20, ex - cx), Math.max(20, ey - cy), 0, 0, 2 * Math.PI); g.stroke();
+      g.setLineDash([]);
+      g.font = `600 13px ${colour('--body')}`; g.textAlign = 'center'; g.fillStyle = colour('--moth');
+      g.strokeStyle = 'rgba(0,0,0,0.7)'; g.lineWidth = 3;
+      g.strokeText('Swarm over the ocean', cx, cy + (ey - cy) + 18); g.fillText('Swarm over the ocean', cx, cy + (ey - cy) + 18);
+      at = [cx, cy];
+    }
+    const kmh = ([u, v]) => Math.round(Math.hypot(u, v));
+    if (n.wind) arrow(...at, n.wind, colour('--wind'), `Wind ${kmh(n.wind)} km/h`, true, 10);
+    if (n.move) arrow(...at, n.move, colour('--moth'), `Swarm ${kmh(n.move)} km/h`, false);
+  }
+
   function draw() {
     if (!g) return;
     g.clearRect(0, 0, width, height);
@@ -100,6 +140,7 @@ export function init(container, night, coast) {
       g.drawImage(tile, 0, 0, width, height);
     }
     labels();
+    notes();
     const utc = night.mosaic.timesUtc[i];
     timeText.textContent = clock(utc);
     sunText.textContent = i < 3 ? 'sunset' : i > last - 3 ? 'dawn' : 'night';
